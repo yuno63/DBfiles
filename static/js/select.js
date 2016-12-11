@@ -228,7 +228,6 @@ function setFig3D() {
 //     test 1
     cmd = '<img src="http://cdn.rawgit.com/yuno63/DBfiles/master/images/' + 
             figName + '" style="height: 420px; width: 700px;">';
-    window.alert("---- setFig3D  cmd:"+cmd);
 //     cmd = '<img src="media/images/' + figName + '" style="height: 420px; width: 700px;">';
     $('#id_show_3D').append(cmd);
 };
@@ -349,7 +348,7 @@ $(document).on('submit', '#draw_monit_form', function(e){
     // change Start-Stop
     var elem = document.getElementById("id_btn_monit");
     if (elem.textContent=="Start") {
-        elem.textContent = "Stop!!!";
+        elem.textContent = "Stop";
         monitor();
         
         var repetition = $('#repetition_db_access').val();  // s
