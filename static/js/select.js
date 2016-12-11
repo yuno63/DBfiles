@@ -225,8 +225,10 @@ function setFig3D() {
             figName = "Thermocouple.png";
             break;
     }
-    cmd = '<img src="https://cdn.rawgit.com/yuno63/DBfiles/master/images/' + 
+//     test 1
+    cmd = '<img src="http://cdn.rawgit.com/yuno63/DBfiles/master/images/' + 
             figName + '" style="height: 420px; width: 700px;">';
+             window.alert("---- setFig3D  cmd:"+cmd);
 //     cmd = '<img src="media/images/' + figName + '" style="height: 420px; width: 700px;">';
     $('#id_show_3D').append(cmd);
 };
@@ -304,7 +306,7 @@ function save() {
         },
         // if success post request
         success : function(json) {
-            window.alert("---- save success ------- json:"+json);
+//             window.alert("---- save success ------- json:"+json);
         },
         // if unsuccess post request
         error : function(xhr,errmsg,err) {
