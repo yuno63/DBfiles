@@ -308,9 +308,9 @@ function save() {
         },
         // if success post request
         success : function(json) {
-            window.alert("---- save success ------- json:"+json["fnSaved"]);
+//             window.alert("---- save success ------- json:"+json["fnSaved"]);
             var filePath = json["fnSaved"];
-            $('<form></form>').attr('action', filePath).appendTo('body').submit().remove();
+//             $('<form></form>').attr('action', filePath).appendTo('body').submit().remove();
         },
         // if unsuccess post request
         error : function(xhr,errmsg,err) {
