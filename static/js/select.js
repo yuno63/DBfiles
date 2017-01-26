@@ -225,8 +225,7 @@ function setFig3D() {
             figName = "Thermocouple.png";
             break;
     }
-//     test 1
-    cmd = '<img src="http://cdn.rawgit.com/yuno63/DBfiles/master/images/' + 
+    cmd = '<img src="https://cdn.rawgit.com/yuno63/DBfiles/master/images/' + 
             figName + '" style="height: 420px; width: 700px;">';
 //     cmd = '<img src="media/images/' + figName + '" style="height: 420px; width: 700px;">';
     $('#id_show_3D').append(cmd);
@@ -248,8 +247,10 @@ function draw() {
         // if success post request
         success : function(json) {
             $("#object_draw").empty();
-            updateGUI( 'object_draw', json['xx'], json['yy'], json['num_gr'], json['maxX'], 
-                json['minY'], json['maxY'], json['xlabels'], json['xsForLabels'], json['names'] )
+//             updateGUI( 'object_draw', json['xx'], json['yy'], json['num_gr'], json['minX'], json['maxX'], 
+//                 json['minY'], json['maxY'], json['xlabels'], json['xsForLabels'], json['names'] )
+            updateGUI( 'object_draw', json['xx'], json['yy'], json['num_gr'], json['minX'], json['maxX'], 
+                json['minY'], json['maxY'], json['names'] )
         },
         // if unsuccess post request
         error : function(xhr,errmsg,err) {
@@ -276,8 +277,10 @@ function monitor() {
         success : function(json) {
             $("#object_draw_monit").empty();
 
-            updateGUI( 'object_draw_monit', json['xx'], json['yy'], json['num_gr'], json['maxX'], 
-                json['minY'], json['maxY'], json['xlabels'], json['xsForLabels'], json['names'] )
+//             updateGUI( 'object_draw_monit', json['xx'], json['yy'], json['num_gr'], json['minX'], json['maxX'], 
+//                 json['minY'], json['maxY'], json['xlabels'], json['xsForLabels'], json['names'] )
+            updateGUI( 'object_draw_monit', json['xx'], json['yy'], json['num_gr'], json['minX'], json['maxX'], 
+                json['minY'], json['maxY'], json['names'] )
 
             $('#id_time_monitor').text(json['maxTstr']);
         },
@@ -305,7 +308,9 @@ function save() {
         },
         // if success post request
         success : function(json) {
-//             window.alert("---- save success ------- json:"+json);
+            window.alert("---- save success ------- json:"+json["fnSaved"]);
+            var filePath = json["fnSaved"];
+            $('<form></form>').attr('action', filePath).appendTo('body').submit().remove();
         },
         // if unsuccess post request
         error : function(xhr,errmsg,err) {
