@@ -62,7 +62,7 @@ function updateGUI( id_obj, data ) {
         graphs_js[igr].fMarkerColor = iColor;
         graphs_js[igr].fMarkerStyle = 20;
         graphs_js[igr].fMarkerSize = 0.4;
-        if (num_gr>10) {  graphs_js[igr].fMarkerSize /= 2.0; }
+        if (num_gr>8) {  graphs_js[igr].fMarkerSize /= 2.0; }
         graphs_js[igr].fName = nameSens;
 //         graphs_js[igr].GetXaxis().SetTimeDisplay(1);
 //         graphs_js[igr].GetXaxis().SetTimeFormat('%Y%m%d');

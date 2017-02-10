@@ -153,6 +153,7 @@ $(function(){
 //         var pos_selected = document.querySelector('.pos_selected');
 //         var pos_group = document.querySelector('.pos_group');
         if (btn_Gr_Indiv=="Selected") {
+            document.getElementById('pos_group').innerHTML = '';
             var selEl = document.getElementById("sensors-selected");
             if (selEl.length==0) {
                 $('#id_btn_draw').prop("disabled", true);
@@ -167,6 +168,8 @@ $(function(){
             document.getElementById('object_draw').style.display = 'block';
             document.getElementById('object_draw_monit').style.display = 'block';
             document.getElementById('group_list_block').style.display = 'none';
+            document.getElementById('div_pad_select').style.display = 'none';
+            document.getElementById('div_pad_select_monitor').style.display = 'none';
 //             $(".pos_group").style.display = 'none';
 //             $(".pos_selected").style.display = 'block';
             
@@ -196,6 +199,8 @@ $(function(){
             document.getElementById('object_draw').style.display = 'none';
             document.getElementById('object_draw_monit').style.display = 'none';
             document.getElementById('group_list_block').style.display = 'block';
+            document.getElementById('div_pad_select').style.display = 'block';
+            document.getElementById('div_pad_select_monitor').style.display = 'block';
 //             $(".pos_group").style.display = 'block';
 //             $(".pos_selected").style.display = 'none';
 
@@ -381,17 +386,44 @@ function setFig3D() {
 
 function drawGraphGroup(json, fields) {
     var pos_group = document.getElementById('pos_group');
+    var selected_group = $('input[name="GrIndiv-1"]:checked').val();
     pos_group.innerHTML = '';
+
+    var category = $('input[name="seg-1"]:checked').val();
+    var subTitles = subGrupTitles[category];
     
     var numPads = json['num_gr'].length;
     var hWind = window.screen.availHeight;
     var wWind = window.screen.availWidth;
-    var widthPad = wWind/numPads*0.93;
-    var heightPad = hWind*0.75-100;
-    var category = $('input[name="seg-1"]:checked').val();
-    var subTitles = subGrupTitles[category];
+    
+    var list_pad = document.getElementById('id_grid_group');
+//     var pad_selected = $('input[name="pad_show"]:checked').val();
+    var pad_selected = "NaN";
+    for(var i=0; i<list_pad.length; i++) {
+//         alert(i+"  list_pad.options[i].selected:"+list_pad.options[i].selected);
+        if (list_pad.options[i].selected) {
+            pad_selected = $(list_pad[i]).val();
+        }
+    }
+//     alert("hW,wW: ["+hWind+","+wWind+"];  list_pad.length:"+list_pad.length+"   pad:"+pad_selected);
 
-//     window.alert("wWind,hWind: "+wWind+", "+hWind+"   w,h: "+widthPad+", "+heightPad);
+    var widthPad = wWind/numPads*0.93;  // 1xN
+    var heightPad = hWind*0.75-100;
+    switch(pad_selected) {
+        case '1xN':  
+            break;
+        case '2xN':  
+            if (numPads>1) { widthPad = wWind/Math.ceil(numPads/2)*0.93; } 
+            break;
+        case 'Nx1':  
+            widthPad = wWind*0.93;             
+            break;
+        case 'Nx2':  
+            if (numPads>1) { widthPad = wWind/2.*0.93; }         
+            break;
+    }
+//     window.alert("wWind,hWind: "+wWind+", "+hWind+"   w,h: "+widthPad+", "+heightPad+"   pad:"+pad_selected);
+
     var cmd = "";
     for (var ipad=0; ipad<numPads; ipad++) {
         var ip = (ipad+1).toString()
