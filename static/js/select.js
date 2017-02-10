@@ -11,7 +11,7 @@ function setSensors() {
     var txtFilter = document.getElementById("txt_filter").value;
     for (var i = 0; i < sens.length; i++){
         if (~sens[i].toLowerCase().indexOf(txtFilter.toLowerCase())) {
-            $('#sensors').append("<option value="+sens[i]+">"+sens[i]+"</option>")
+            $('#sensors').append("<option value="+sens[i]+" >"+sens[i]+"</option>")
         }
     }
 }
@@ -28,6 +28,79 @@ function changePvssDb() {
     }else{
         lb_pvss.style.fontWeight="normal";
         lb_db.style.fontWeight="bold";
+    }
+}
+
+function setupSubGroups(category) {
+//     var category = $('input[name="seg-1"]:checked').val();
+    var btn_Gr_Indiv = $('input[name="GrIndiv-1"]:checked').val();
+    if ( (btn_Gr_Indiv=="Group") ) {
+        var check_subgroup = document.getElementById('id_check_subgroup');
+        var min_subgroup = document.getElementById('id_min_subgroup');
+        var max_subgroup = document.getElementById('id_max_subgroup');
+        var pos_group = document.getElementById('pos_group');
+        
+        pos_group.innerHTML = '';
+        if (category=="All") {return};
+
+        var container_list = document.getElementsByClassName('group_container');
+        for (var cont=0; cont<container_list.length; cont++) {
+            container_list[cont].style.display = 'none';
+        }
+        
+        var name_child_list = document.getElementsByName('check_' + category);
+//         alert("category: "+category+",  name_child_list.length: "+name_child_list.length);
+        if (name_child_list.length>0) { // checkboxes for category - existed
+            document.getElementById('div_check_' + category).style.display = 'block';
+            document.getElementById('div_min_' + category).style.display = 'block';
+            document.getElementById('div_max_' + category).style.display = 'block';
+        } else {
+            var subNames = subGrupNames[category];
+            var subTitles = subGrupTitles[category];
+            var subNumbTitles = subGrupNumbTitles[category];
+            var nSubGr = subNames.length;
+    
+            // set new checkbox column
+            var divEnd = '</div>';
+//             check_subgroup.innerHTML = '';
+            var cmd = '<div class="group_container"  id="div_check_' + category + '" >';
+            for (var i=0; i<nSubGr; i++) {
+                var iStr = i.toString();
+
+                var divInit = '<div class="checkbox" name="check_' + category + '" style="padding-top:-7px; padding-bottom:0px;margin-top:-8px;margin-left:-5px;">';
+                var labelPref = '<label class="checkbox" name="check_sub" style="font-size:12px;" id="check_lb_' + category + '_';
+                var checkPref = '<input type="checkbox" name="check_sub" id="check_' + category + '_';
+                var txtTooltip = ' data-toggle="tooltip" data-placement="bottom" title="' + subTitles[i] + '" data-trigger="hover" ';
+                var cmdDiv = divInit + labelPref + iStr + '"' + txtTooltip + '>' + checkPref + iStr + '"' + txtTooltip + '" checked value="'+ iStr + '">'+ subNumbTitles[i] + '</label>' + divEnd;
+                cmd = cmd+cmdDiv;
+            }
+            cmd = cmd+divEnd;
+            check_subgroup.innerHTML = check_subgroup.innerHTML + cmd;
+            
+            // set new minVal column
+//             min_subgroup.innerHTML = '';
+//             max_subgroup.innerHTML = '';
+            var minmax = ["min", "max"];
+            for (var mnx=0; mnx<minmax.length; mnx++) {
+                var mm = minmax[mnx];
+                cmd = '<div class="group_container"  id="div_'+ mm + '_' + category + '" >';
+                for (var i=0; i<nSubGr; i++) {
+                    var iStr = i.toString();
+                    var val = 0.;
+                    var divInit = '<div class="form-group" style="padding-top:-5px; padding-bottom:0px;margin-top:-1px;margin-bottom:0px;">';
+                    var txtTooltip = ' data-toggle="tooltip" data-placement="bottom" title="' + mm + ' val" data-trigger="hover" ';
+                    var label = '<label for="id_' + mm + '_'+ iStr + '"' +  txtTooltip + ' style="font-size:15px;height:18px;">' + mm + ':</label>';
+                    var input = '<input class="form-control-sm"' + txtTooltip + ' id="id_'  + category + '_'+ mm + '_'+ iStr + '" style="max-width:50%;font-size:12px;height:18px;" value="' + val.toString() +'">';
+                    var cmdDiv = divInit + label + input + divEnd;
+                    cmd = cmd+cmdDiv;
+    //                 alert("cmdDiv: "+cmdDiv);
+                }
+                cmd = cmd+divEnd;
+    //             window.alert("cmd: "+cmd);
+                if (mm=="min") {min_subgroup.innerHTML = min_subgroup.innerHTML + cmd;}
+                else if (mm=="max") {max_subgroup.innerHTML = max_subgroup.innerHTML + cmd;};
+            }
+        }
     }
 }
 
@@ -56,16 +129,93 @@ function changeSaveGroup() {
 }
 
 $(function(){
+    $('input[name=disp_tabs]').change(function(){
+        window.alert("disp_tabs");
+    });
     $('input[name=seg-1]').change(function(){
+        var category = $('input[name="seg-1"]:checked').val();
+        setupSubGroups(category);
         setSensors();
         setTable();
         setFig3D();
         setFileTab();
     });
+//     $('input[name=check_sub]').change(function(){
+//         window.alert("id:");
+//     });
+    $('input[name=GrIndiv-1]').change(function(){
+        var btn_Gr_Indiv = $('input[name="GrIndiv-1"]:checked').val();
+        var category = $('input[name="seg-1"]:checked').val();
+        var name_child_list = document.getElementsByName('check_' + category);
+//         window.alert("btn_Gr_Indiv:"+btn_Gr_Indiv ); 
+//         var pos_selected = $(".pos_selected").html();
+//         var pos_group = $(".pos_group").html();
+//         var pos_selected = document.querySelector('.pos_selected');
+//         var pos_group = document.querySelector('.pos_group');
+        if (btn_Gr_Indiv=="Selected") {
+            var selEl = document.getElementById("sensors-selected");
+            if (selEl.length==0) {
+                $('#id_btn_draw').prop("disabled", true);
+                $('#id_btn_monit').prop("disabled", true);
+            }
+            else {
+                $('#id_btn_draw').prop("disabled", false);
+                $('#id_btn_monit').prop("disabled", false);
+            }
+            document.getElementById('filter_block').style.display = 'block';
+            document.getElementById('sens_list_block').style.display = 'block';
+            document.getElementById('object_draw').style.display = 'block';
+            document.getElementById('object_draw_monit').style.display = 'block';
+            document.getElementById('group_list_block').style.display = 'none';
+//             $(".pos_group").style.display = 'none';
+//             $(".pos_selected").style.display = 'block';
+            
+//             document.getElementById('pos_group').style.display = 'none';
+//             document.getElementById('pos_group').style.visibility = 'hidden';
+            document.getElementById('pos_selected').style.display = 'block';
+
+//             $('#main_block').detach().appendTo('#tab_link');
+//             $('.pos_group').html();
+//             $('.pos_selected').html(pos_group);
+
+//             pos_selected.innerHTML = pos_group.innerHTML;//+pos_selected.innerHTML;
+//             pos_group.innerHTML = '';
+        }
+        else { // Group
+            if (name_child_list.length==0) { 
+                // initially create check/min/max divs for all groups
+                for (var igr=0; igr<categorie_names.length; igr++) {
+                    setupSubGroups(categorie_names[igr]);
+                }
+            }
+            setupSubGroups(category);
+            $('#id_btn_draw').prop("disabled", false);
+            $('#id_btn_monit').prop("disabled", false);
+            document.getElementById('filter_block').style.display = 'none';
+            document.getElementById('sens_list_block').style.display = 'none';
+            document.getElementById('object_draw').style.display = 'none';
+            document.getElementById('object_draw_monit').style.display = 'none';
+            document.getElementById('group_list_block').style.display = 'block';
+//             $(".pos_group").style.display = 'block';
+//             $(".pos_selected").style.display = 'none';
+
+            document.getElementById('pos_selected').style.display = 'none';
+            document.getElementById('pos_group').style.display = 'block';
+//             document.getElementById('pos_group').style.visibility = 'visible';
+
+//             $('#tab_link').detach().appendTo('#main_block');
+//             $('.pos_selected').html();
+//             $('.pos_group').html(pos_selected);
+//             $('.pos_group').html();
+
+//             pos_group.innerHTML = pos_selected.innerHTML;//+pos_group.innerHTML;
+//             pos_selected.innerHTML = '';
+        }
+    });
 });
 
 function setLenSaveSelected(){
-    selEl = document.getElementById("sensors-selected");
+    var selEl = document.getElementById("sensors-selected");
     $('#lb_save_selected').text("Selected ("+selEl.length+")");
 }
 
@@ -124,7 +274,7 @@ function check_btn_save() {
 function clearSelected(){
     select_all();
     $('#sensors-selected').empty();
-    $('#id_clear').prop("disabled", true);
+//     $('#id_clear').prop("disabled", true);
     $('#id_btn_draw').prop("disabled", true);
     $('#id_btn_monit').prop("disabled", true);
     check_btn_save();
@@ -132,23 +282,6 @@ function clearSelected(){
 
 function  setFileTab(){
 }
-
-$(function() {
-    $('#time1').datetimepicker({
-        format: 'YYYY-MM-DD HH:mm:ss',
-        useCurrent: false,
-        defaultDate: '2016-10-01 00:00:00',
-        minDate: '2016-05-31 18:14:54',
-        maxDate: '2016-10-01 19:08:30'
-    });
-    $('#time2').datetimepicker({
-        format: 'YYYY-MM-DD HH:mm:ss',
-        useCurrent: false,
-        minDate: '2016-05-31 18:14:54',
-        maxDate: '2016-10-01 19:08:30',
-        defaultDate: '2016-10-01 19:08:30'
-    });
-});
 
 function SwitchTab(my_tab, my_content) {
     for(var i=0; i<tabNames.length; i++) {
@@ -159,6 +292,13 @@ function SwitchTab(my_tab, my_content) {
     document.getElementById(my_content).style.display = 'block';  
     document.getElementById(my_tab).className = 'active';
     document.getElementById(my_tab).style='background-color:yellow';
+    if (my_tab!="tb_monit") {
+        var elem = document.getElementById("id_btn_monit");
+        elem.style.background='blue';
+        elem.textContent = "Start";
+        clearInterval(window.timerID);
+    }
+    document.getElementById('pos_group').innerHTML='';
 };
 
 $(function () {
@@ -170,23 +310,31 @@ function setTable() {
     $('tbody').empty();
 
     var sensID = sensorsID[category];
+    if (sensorsUnity.length>0) {
+        var sensUnity = sensorsUnity[category];
+    }
     var sensPVSS = sensorsPVSS[category];
     var sensDBraw = sensorsDBraw[category];
     var sensDescript = sensorsDescript[category];
     var sensStatus = sensorsStatus[category];
 
     for (var i = 0; i < sensPVSS.length; i++){
-        var listDB = [sensID[i], sensPVSS[i], sensDBraw[i], sensDescript[i], "N/A", sensStatus[i]];
-        var sensVal = "--"
-        indSens = nameTables.indexOf(sensPVSS[i])
+//         var listDB = [sensID[i], sensPVSS[i], sensDBraw[i], sensDescript[i], "N/A", sensUnity[i], sensStatus[i]];
+        var sensVal = "--";
+        indSens = nameTables.indexOf(sensPVSS[i]);
         if (indSens>-1) {
             sensVal = dbValue[sensPVSS[i]];
+        }
+        var sensUn = "--";
+        if (sensorsUnity.length>0) {
+            sensUn = sensUnity[i];
         }
         var row = $("<tr>").append($("<td>").html(sensID[i]))
                             .append($("<td>").html(sensPVSS[i]))
                             .append($("<td>").html(sensDBraw[i]))
                             .append($("<td>").html(sensDescript[i]))
                             .append($("<td>").html(sensVal))
+                            .append($("<td>").html(sensUn))
                             .append($("<td>").html(sensStatus[i]));
         $("tbody").append(row);
     }
@@ -231,26 +379,128 @@ function setFig3D() {
     $('#id_show_3D').append(cmd);
 };
 
+function drawGraphGroup(json, fields) {
+    var pos_group = document.getElementById('pos_group');
+    pos_group.innerHTML = '';
+    
+    var numPads = json['num_gr'].length;
+    var hWind = window.screen.availHeight;
+    var wWind = window.screen.availWidth;
+    var widthPad = wWind/numPads*0.93;
+    var heightPad = hWind*0.75-100;
+    var category = $('input[name="seg-1"]:checked').val();
+    var subTitles = subGrupTitles[category];
+
+//     window.alert("wWind,hWind: "+wWind+", "+hWind+"   w,h: "+widthPad+", "+heightPad);
+    var cmd = "";
+    for (var ipad=0; ipad<numPads; ipad++) {
+        var ip = (ipad+1).toString()
+        var cmdDiv = '<div id="object_draw_' + ip +'" class="draw_group" style="float:left; width:' + widthPad + 'px; height:' + heightPad + 'px;"></div>';
+        cmd = cmd+cmdDiv;
+    }
+    pos_group.innerHTML = cmd;
+    
+    var indGr = getIndGr();
+    var minmax = getMinMaxGr();
+//     window.alert("indGr: "+indGr);
+    for (var ipad=0; ipad<numPads; ipad++) {
+        var data = {};
+        for (var i=0;i<fields.length;i++) {
+            var val = json[fields[i]];
+            if (typeof(val) == "object") {
+                data[fields[i]] = val[ipad];
+            } else {
+                data[fields[i]] = val;
+            }
+        }
+        data['title'] = subTitles[indGr[ipad]];
+        data['minGr'] = minmax['minGr'][ipad];
+        data['maxGr'] = minmax['maxGr'][ipad];
+        var id_draw = 'object_draw_'+(ipad+1).toString();
+//         window.alert("id_draw:"+id_draw);
+        updateGUI( id_draw, data );
+    }
+};
+
+function getMinMaxGr() {
+    var selected_group = $('input[name="GrIndiv-1"]:checked').val();
+    var category = $('input[name="seg-1"]:checked').val();
+    var minGr=[], maxGr=[];
+    if (selected_group=="Group") {
+        var nSubGr = subGrupNames[category].length;
+        for (var i=0; i<nSubGr; i++) {
+            var id = 'check_' + category + '_' + i.toString();
+            if ($('#' + id).is(":checked")) {
+                minGr.push( $( '#id_' + category + '_min_'+i.toString() ).val() );
+                maxGr.push( $( '#id_' + category + '_max_'+i.toString() ).val() );
+            }
+        }
+    } else { 
+        minGr.push(0);
+        maxGr.push(0);
+    }
+//     window.alert("minGr: "+minGr+";    maxGr: "+maxGr);
+    var data = {"minGr": minGr, "maxGr": maxGr};
+    return data;
+}
+
+function getIndGr() {
+    var selected_group = $('input[name="GrIndiv-1"]:checked').val();
+    var category = $('input[name="seg-1"]:checked').val();
+    var indGr = [];
+    if (selected_group=="Group") {
+        var nSubGr = subGrupNames[category].length;
+        for (var i=0; i<nSubGr; i++) {
+            var id = 'check_' + category + '_'+i.toString();
+            if ($('#' + id).is(":checked")) {indGr.push(i);}
+        }
+    } else { indGr.push(0);}
+//     window.alert("indGr: "+indGr);
+    return indGr;
+}
+
 function draw() {
     select_all();
+    $('#id_btn_draw').prop("disabled", true);
+    var selected_group = $('input[name="GrIndiv-1"]:checked').val();
+    if (selected_group=="Selected") {
+    } else {  // Group
+        var pos_group = document.getElementById('pos_group');
+        pos_group.innerHTML = '';
+    }
+
     $.ajax({
         type: 'POST',
         url: 'draw/',
         data: {
             mode: JSON.stringify( "draw" ),
+            category: JSON.stringify( $('input[name="seg-1"]:checked').val() ),
             names: JSON.stringify( $('#sensors-selected').val() ),
-            time1: $('#time1').val(),
-            time2: $('#time2').val(),
+            npoints: $('#id_npoint').val(),
+            ind_gr: JSON.stringify( getIndGr() ),
+            time1: $('#time1_inp').val(),
+            time2: $('#time2_inp').val(),
             pvss_db: JSON.stringify( $('input[name="pvss"]:checked').val()?"pvss":"db" ),
+            selected_group: JSON.stringify( $('input[name="GrIndiv-1"]:checked').val() ),
             csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
         },
         // if success post request
         success : function(json) {
-            $("#object_draw").empty();
-//             updateGUI( 'object_draw', json['xx'], json['yy'], json['num_gr'], json['minX'], json['maxX'], 
-//                 json['minY'], json['maxY'], json['xlabels'], json['xsForLabels'], json['names'] )
-            updateGUI( 'object_draw', json['xx'], json['yy'], json['num_gr'], json['minX'], json['maxX'], 
-                json['minY'], json['maxY'], json['names'] )
+            var fields = ['xx', 'yy', 'num_gr', 'minY', 'maxY', 'minX', 'maxX', 'names'];
+            if (selected_group=="Selected") {
+                var data = {"minGr": 0, "maxGr": 0};
+                for (var i=0;i<fields.length;i++) {
+                    data[fields[i]] = json[fields[i]];
+                }
+                data['title'] = '';
+                var id_draw = 'object_draw';
+//                 window.alert("id_draw:"+id_draw);
+                $("#"+id_draw).empty();
+                updateGUI( id_draw, data );
+            }
+            else { // Group
+                drawGraphGroup( json, fields );
+            }
         },
         // if unsuccess post request
         error : function(xhr,errmsg,err) {
@@ -258,31 +508,46 @@ function draw() {
         }
     });
     deselect_all();
+    $('#id_btn_draw').prop("disabled", false);
 };
 
 function monitor() {
     select_all();
+    var selected_group = $('input[name="GrIndiv-1"]:checked').val();
+
     $.ajax({
         type: 'POST',
         url: 'draw/',
         data: {
             mode: JSON.stringify( "monitor" ),
+            category: JSON.stringify( $('input[name="seg-1"]:checked').val() ),
             names: JSON.stringify( $('#sensors-selected').val() ),
+            npoints: $('#id_npoint_monitor').val(),
+            ind_gr: JSON.stringify( getIndGr() ),
             time_interval: $('#time_interval').val(),
             time_monitor_shift: JSON.stringify( $('#id_time_monitor_shift').val() ),
             pvss_db: JSON.stringify( $('input[name="pvss"]:checked').val()?"pvss":"db" ),
+            selected_group: JSON.stringify( selected_group ),
             csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
         },
         // if success post request
         success : function(json) {
-            $("#object_draw_monit").empty();
-
-//             updateGUI( 'object_draw_monit', json['xx'], json['yy'], json['num_gr'], json['minX'], json['maxX'], 
-//                 json['minY'], json['maxY'], json['xlabels'], json['xsForLabels'], json['names'] )
-            updateGUI( 'object_draw_monit', json['xx'], json['yy'], json['num_gr'], json['minX'], json['maxX'], 
-                json['minY'], json['maxY'], json['names'] )
-
             $('#id_time_monitor').text(json['maxTstr']);
+            var fields = ['xx', 'yy', 'num_gr', 'minY', 'maxY', 'minX', 'maxX', 'names'];
+            var data = {"minGr": 0, "maxGr": 0};
+            if (selected_group=="Selected") {
+                for (var i=0;i<fields.length;i++) {
+                    data[fields[i]] = json[fields[i]];
+                }
+                data['title'] = '';
+                var id_draw = 'object_draw_monit';
+//                 window.alert("id_draw:"+id_draw);
+                $("#"+id_draw).empty();
+                updateGUI( id_draw, data );
+            }
+            else { // Group
+                drawGraphGroup( json, fields );
+            }            
         },
         // if unsucess post request
         error : function(xhr,errmsg,err) {
@@ -308,9 +573,9 @@ function save() {
         },
         // if success post request
         success : function(json) {
-//             window.alert("---- save success ------- json:"+json["fnSaved"]);
+            window.alert("---- save success ------- json:"+json["fnSaved"]);
             var filePath = json["fnSaved"];
-//             $('<form></form>').attr('action', filePath).appendTo('body').submit().remove();
+            $('<form></form>').attr('action', filePath).appendTo('body').submit().remove();
         },
         // if unsuccess post request
         error : function(xhr,errmsg,err) {
@@ -344,7 +609,7 @@ function table() {
 };
 
 $(document).on('submit', '#draw_form', function(e){
-    e.preventDefault();
+    e.preventDefault(); // cancell the browser actions
     draw();
 });
 
@@ -353,6 +618,7 @@ $(document).on('submit', '#draw_monit_form', function(e){
     // change Start-Stop
     var elem = document.getElementById("id_btn_monit");
     if (elem.textContent=="Start") {
+        elem.style.background='red';
         elem.textContent = "Stop";
         monitor();
         
@@ -360,6 +626,7 @@ $(document).on('submit', '#draw_monit_form', function(e){
         timerID = setInterval(monitor, 1000*repetition);
     }
     else {
+        elem.style.background='blue';
         elem.textContent = "Start";
         clearInterval(window.timerID);
     }
