@@ -45,7 +45,7 @@ function updateGUI( id_obj, data ) {
     var maxX = data['maxX'];
     var names = data['names'];
     var title = data['title'];
-
+// alert("names: "+names);
     var maxLegCol = 8;
     var ncol = Math.ceil(num_gr/maxLegCol);
     var leg = CreateLegend(num_gr,ncol);
@@ -62,6 +62,7 @@ function updateGUI( id_obj, data ) {
         graphs_js[igr].fMarkerColor = iColor;
         graphs_js[igr].fMarkerStyle = 20;
         graphs_js[igr].fMarkerSize = 0.4;
+        if (num_gr>10) {  graphs_js[igr].fMarkerSize /= 2.0; }
         graphs_js[igr].fName = nameSens;
 //         graphs_js[igr].GetXaxis().SetTimeDisplay(1);
 //         graphs_js[igr].GetXaxis().SetTimeFormat('%Y%m%d');
