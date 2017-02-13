@@ -170,6 +170,8 @@ $(function(){
             document.getElementById('group_list_block').style.display = 'none';
             document.getElementById('div_pad_select').style.display = 'none';
             document.getElementById('div_pad_select_monitor').style.display = 'none';
+            document.getElementById('div_scaled_check').style.display = 'block';
+            document.getElementById('div_scaled_check_monit').style.display = 'block';
 //             $(".pos_group").style.display = 'none';
 //             $(".pos_selected").style.display = 'block';
             
@@ -201,6 +203,8 @@ $(function(){
             document.getElementById('group_list_block').style.display = 'block';
             document.getElementById('div_pad_select').style.display = 'block';
             document.getElementById('div_pad_select_monitor').style.display = 'block';
+            document.getElementById('div_scaled_check').style.display = 'none';
+            document.getElementById('div_scaled_check_monit').style.display = 'none';
 //             $(".pos_group").style.display = 'block';
 //             $(".pos_selected").style.display = 'none';
 
@@ -315,9 +319,8 @@ function setTable() {
     $('tbody').empty();
 
     var sensID = sensorsID[category];
-    if (sensorsUnity.length>0) {
-        var sensUnity = sensorsUnity[category];
-    }
+    var sensUnity = sensorsUnity[category];
+//     alert("sensID.length:" + sensID.length);
     var sensPVSS = sensorsPVSS[category];
     var sensDBraw = sensorsDBraw[category];
     var sensDescript = sensorsDescript[category];
@@ -330,10 +333,7 @@ function setTable() {
         if (indSens>-1) {
             sensVal = dbValue[sensPVSS[i]];
         }
-        var sensUn = "--";
-        if (sensorsUnity.length>0) {
-            sensUn = sensUnity[i];
-        }
+        var sensUn = sensUnity[i];
         var row = $("<tr>").append($("<td>").html(sensID[i]))
                             .append($("<td>").html(sensPVSS[i]))
                             .append($("<td>").html(sensDBraw[i]))
@@ -384,10 +384,13 @@ function setFig3D() {
     $('#id_show_3D').append(cmd);
 };
 
+function setPadDivision() {
+};
+
 function drawGraphGroup(json, fields) {
     var pos_group = document.getElementById('pos_group');
     var selected_group = $('input[name="GrIndiv-1"]:checked').val();
-    pos_group.innerHTML = '';
+//     pos_group.innerHTML = '';
 
     var category = $('input[name="seg-1"]:checked').val();
     var subTitles = subGrupTitles[category];
@@ -444,14 +447,155 @@ function drawGraphGroup(json, fields) {
             } else {
                 data[fields[i]] = val;
             }
+            
         }
         data['title'] = subTitles[indGr[ipad]];
         data['minGr'] = minmax['minGr'][ipad];
         data['maxGr'] = minmax['maxGr'][ipad];
+        data['scale_status'] = false;
         var id_draw = 'object_draw_'+(ipad+1).toString();
 //         window.alert("id_draw:"+id_draw);
         updateGUI( id_draw, data );
     }
+};
+
+function drawGroup() {
+    var indGr = getIndGr();
+    var numPads = indGr.length;
+//     window.alert("indGr: "+indGr);
+    
+    var sizePad = getSizePad();
+    var widthPad=sizePad[0], heightPad=sizePad[1];
+//     window.alert("drawGroup ----   w,h: "+widthPad+", "+heightPad);
+
+    var cmd = "";
+    for (var ipad=0; ipad<numPads; ipad++) {
+        var ip = (ipad+1).toString()
+        var cmdDiv = '<div id="object_draw_' + ip + 
+            '" class="draw_group" style="float:left; width:' + 
+            widthPad + 'px; height:' + heightPad + 'px;"></div>';
+        cmd = cmd+cmdDiv;
+    }
+    
+    document.getElementById('pos_group').innerHTML = cmd;
+    
+    for (var ipad=0; ipad<numPads; ipad++) {
+        requestAjax( indGr[ipad], ipad );
+    }
+};
+
+function requestAjax(iGr, ipad) {
+    var selected_group = $('input[name="GrIndiv-1"]:checked').val();
+    var category = $('input[name="seg-1"]:checked').val();
+    var subTitles = subGrupTitles[category];
+    var minmax = getMinMaxGr();
+    if (selected_group=="Selected") {
+        select_all();
+        indGr = [0];
+    } else {
+        indGr = [iGr];
+    }
+    var mode = document.getElementById("tb_monit").className =='active' ? "monitor" : "draw";
+//     alert("requestAjax   mode:"+mode);
+    
+    $.ajax({
+        type: 'POST',
+        url: 'draw/',
+        dataType: 'json',
+        data: {
+            mode: JSON.stringify( mode ),
+            category: JSON.stringify( $('input[name="seg-1"]:checked').val() ),
+            names: JSON.stringify( $('#sensors-selected').val() ),
+            npoints: $('#id_npoint').val(),
+            ind_gr: JSON.stringify( indGr ),
+            time_interval: $('#time_interval').val(),
+            time_monitor_shift: JSON.stringify( $('#id_time_monitor_shift').val() ),
+            time1: $('#time1_inp').val(),
+            time2: $('#time2_inp').val(),
+            pvss_db: JSON.stringify( $('input[name="pvss"]:checked').val()?"pvss":"db" ),
+            selected_group: JSON.stringify( $('input[name="GrIndiv-1"]:checked').val() ),
+            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+        },
+        // if success post request
+        success : function(json) {
+            var fields = ['xx', 'yy', 'num_gr', 'minY', 'maxY', 'minX', 'maxX', 'names', 'timeDB'];
+            if (selected_group=="Selected") {
+                var data = {"minGr": 0, "maxGr": 0};
+                for (var i=0;i<fields.length;i++) {
+                    data[fields[i]] = json[fields[i]];
+                }
+                data['title'] = 'Selected sensors';
+                data['scale_status'] = $('#id_scaled_check').is(":checked");
+                var id_draw = 'object_draw';
+                if (mode=="monitor") {id_draw += "_monit";};
+//                 window.alert("id_draw:"+id_draw);
+                $("#"+id_draw).empty();
+                updateGUI( id_draw, data );
+            }
+            else { // Group
+                // variant to draw single group (not all gpoups)
+                var data = {};
+                for (var i=0;i<fields.length;i++) {
+                    var val = json[fields[i]];
+                    if (typeof(val) == "object") {
+                        data[fields[i]] = val[0];
+                    } else {
+                        data[fields[i]] = val;
+                    }
+                }
+                data['title'] = subTitles[ipad];
+                data['minGr'] = minmax['minGr'][ipad];
+                data['maxGr'] = minmax['maxGr'][ipad];
+                data['scale_status'] = false;
+                var id_draw = 'object_draw_'+(ipad+1).toString();
+        //         window.alert("id_draw:"+id_draw);
+                updateGUI( id_draw, data );
+            }
+        },
+        // if unsuccess post request
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText);
+        }
+    });
+    deselect_all();
+};
+
+function getSizePad() {
+    var list_pad = document.getElementById("tb_monit").className =='active' ? 
+            document.getElementById('id_grid_group_monitor') : 
+            document.getElementById('id_grid_group');
+    var indGr = getIndGr();
+    var numPads = indGr.length;
+    var hWind = window.screen.availHeight;
+    var wWind = window.screen.availWidth;
+    
+//     var pad_selected = $('input[name="pad_show"]:checked').val();
+    var pad_selected = "NaN";
+    for(var i=0; i<list_pad.length; i++) {
+//         alert(i+"  list_pad.options[i].selected:"+list_pad.options[i].selected);
+        if (list_pad.options[i].selected) {
+            pad_selected = $(list_pad[i]).val();
+        }
+    }
+//     alert("hW,wW: ["+hWind+","+wWind+"];  list_pad.length:"+list_pad.length+"   pad:"+pad_selected);
+
+    var widthPad = wWind/numPads*0.93;  // 1xN
+    var heightPad = hWind*0.75-100;
+    switch(pad_selected) {
+        case '1xN':  
+            break;
+        case '2xN':  
+            if (numPads>1) { widthPad = wWind/Math.ceil(numPads/2)*0.93; } 
+            break;
+        case 'Nx1':  
+            widthPad = wWind*0.93;             
+            break;
+        case 'Nx2':  
+            if (numPads>1) { widthPad = wWind/2.*0.93; }         
+            break;
+    }
+//     window.alert("getSizePad --- wWind,hWind: "+wWind+", "+hWind+"   w,h: "+widthPad+", "+heightPad+"   pad:"+pad_selected);
+    return [widthPad, heightPad];
 };
 
 function getMinMaxGr() {
@@ -474,7 +618,7 @@ function getMinMaxGr() {
 //     window.alert("minGr: "+minGr+";    maxGr: "+maxGr);
     var data = {"minGr": minGr, "maxGr": maxGr};
     return data;
-}
+};
 
 function getIndGr() {
     var selected_group = $('input[name="GrIndiv-1"]:checked').val();
@@ -491,19 +635,54 @@ function getIndGr() {
     return indGr;
 }
 
+function getSingleRequest(sensor_name) {
+    var data = {"minGr": 0, "maxGr": 0};
+    $.ajax({
+        type: 'POST',
+        url: 'draw/',
+        dataType: 'json',
+        data: {
+            mode: JSON.stringify( "draw" ),
+            category: JSON.stringify( "single" ),
+            names: JSON.stringify( "['"+sensor_name+"']"),
+            npoints: $('#id_npoint').val(),
+            ind_gr: JSON.stringify( "[0]" ),
+            time1: $('#time1_inp').val(),
+            time2: $('#time2_inp').val(),
+            pvss_db: JSON.stringify( $('input[name="pvss"]:checked').val()?"pvss":"db" ),
+            selected_group: JSON.stringify( "none" ),
+            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+        },
+        // if success post request
+        success : function(json) {
+            var fields = ['xx', 'yy', 'num_gr', 'minY', 'maxY', 'minX', 'maxX'];
+            for (var i=0;i<fields.length;i++) {
+                data[fields[i]] = json[fields[i]];
+            }
+//         alert('data["minGr"]:'+data["minGr"]);
+//             return data;
+        },
+        // if unsuccess post request
+        error : function(xhr,errmsg,err) {
+            console.log(xhr.status + ": " + xhr.responseText);
+        }
+    });
+//     return data;
+};
+
 function draw() {
-    select_all();
-    $('#id_btn_draw').prop("disabled", true);
     var selected_group = $('input[name="GrIndiv-1"]:checked').val();
     if (selected_group=="Selected") {
+        select_all();
     } else {  // Group
-        var pos_group = document.getElementById('pos_group');
-        pos_group.innerHTML = '';
+//         var pos_group = document.getElementById('pos_group');
+//         pos_group.innerHTML = '';
     }
 
     $.ajax({
         type: 'POST',
         url: 'draw/',
+        dataType: 'json',
         data: {
             mode: JSON.stringify( "draw" ),
             category: JSON.stringify( $('input[name="seg-1"]:checked').val() ),
@@ -518,13 +697,14 @@ function draw() {
         },
         // if success post request
         success : function(json) {
-            var fields = ['xx', 'yy', 'num_gr', 'minY', 'maxY', 'minX', 'maxX', 'names'];
+            var fields = ['xx', 'yy', 'num_gr', 'minY', 'maxY', 'minX', 'maxX', 'names', 'timeDB'];
             if (selected_group=="Selected") {
                 var data = {"minGr": 0, "maxGr": 0};
                 for (var i=0;i<fields.length;i++) {
                     data[fields[i]] = json[fields[i]];
                 }
-                data['title'] = '';
+                data['title'] = 'Selected sensors';
+                data['scale_status'] = $('#id_scaled_check').is(":checked");
                 var id_draw = 'object_draw';
 //                 window.alert("id_draw:"+id_draw);
                 $("#"+id_draw).empty();
@@ -540,10 +720,10 @@ function draw() {
         }
     });
     deselect_all();
-    $('#id_btn_draw').prop("disabled", false);
+//     $('#id_btn_draw').prop("disabled", false);
 };
 
-function monitor() {
+function monitor111() {
     select_all();
     var selected_group = $('input[name="GrIndiv-1"]:checked').val();
 
@@ -565,13 +745,14 @@ function monitor() {
         // if success post request
         success : function(json) {
             $('#id_time_monitor').text(json['maxTstr']);
-            var fields = ['xx', 'yy', 'num_gr', 'minY', 'maxY', 'minX', 'maxX', 'names'];
+            var fields = ['xx', 'yy', 'num_gr', 'minY', 'maxY', 'minX', 'maxX', 'names', 'timeDB'];
             var data = {"minGr": 0, "maxGr": 0};
             if (selected_group=="Selected") {
                 for (var i=0;i<fields.length;i++) {
                     data[fields[i]] = json[fields[i]];
                 }
-                data['title'] = '';
+                data['title'] = 'Selected sensors';
+                data['scale_status'] = $('#id_scaled_check_monit').is(":checked");
                 var id_draw = 'object_draw_monit';
 //                 window.alert("id_draw:"+id_draw);
                 $("#"+id_draw).empty();
@@ -617,7 +798,6 @@ function save() {
     deselect_all();
 };
 
-
 function table() {
     $('#id_btn_table_update').prop("disabled", true);
     $.ajax({
@@ -640,9 +820,44 @@ function table() {
     });
 };
 
+function cleanGraphs(mode){
+//     var mode='';
+    if ($('input[name="GrIndiv-1"]:checked').val()=="Selected") {
+            document.getElementById('object_draw'+mode).innerHTML = '';
+    } else {  // Group
+        document.getElementById('pos_group').innerHTML = '';
+    }
+};
+
+
+function drawGraphs(){
+    if ( $('input[name="GrIndiv-1"]:checked').val()=="Selected" ) {
+//         draw();
+        requestAjax();
+    } else {  // Group
+        drawGroup();    
+    }
+};
+
 $(document).on('submit', '#draw_form', function(e){
+    cleanGraphs('');
+    $('#id_btn_draw').prop("disabled", true); 
+//     setTimeout("$('#id_btn_draw').prop('disabled', true);e.preventDefault();",100);
+//     setTimeout( function run() {
+//         $('#id_btn_draw').prop("disabled", true);  
+//         setTimeout(run, 100);}, 100);
     e.preventDefault(); // cancell the browser actions
-    draw();
+    
+//     $('#modal_show').modal('show');
+//     setTimeout(function run() {
+//  $('#modal_show').modal('show');  setTimeout(run, 100);
+// }, 100);
+//     setTimeout("draw();$('#modal_show').modal('hide');",100);
+    
+    drawGraphs();
+
+//     $('#modal_show').modal('hide');
+    $('#id_btn_draw').prop("disabled", false);
 });
 
 $(document).on('submit', '#draw_monit_form', function(e){
@@ -652,10 +867,11 @@ $(document).on('submit', '#draw_monit_form', function(e){
     if (elem.textContent=="Start") {
         elem.style.background='red';
         elem.textContent = "Stop";
-        monitor();
+    
+        drawGraphs();
         
         var repetition = $('#repetition_db_access').val();  // s
-        timerID = setInterval(monitor, 1000*repetition);
+        timerID = setInterval(drawGraphs, 1000*repetition);
     }
     else {
         elem.style.background='blue';
