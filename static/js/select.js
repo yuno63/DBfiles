@@ -479,7 +479,7 @@ function requestAjax(iGr, ipad) {
         indGr = [iGr];
     }
     var mode = document.getElementById("tb_monit").className =='active' ? "monitor" : "draw";
-//     alert("requestAjax   mode:"+mode);
+    alert("requestAjax   mode:"+mode);
     
     $.ajax({
         type: 'POST',
@@ -515,7 +515,7 @@ function requestAjax(iGr, ipad) {
                 data['scale_status'] = $('#id_scaled_check').is(":checked");
                 var id_draw = 'object_draw';
                 if (mode=="monitor") {id_draw += "_monit";};
-//                 window.alert("id_draw:"+id_draw);
+                window.alert("id_draw:"+id_draw);
                 document.getElementById(id_draw).style.height = heightPad.toString() + 'px';
                 document.getElementById(id_draw).style.width = widthPad.toString() + 'px';
                 $("#"+id_draw).empty();
