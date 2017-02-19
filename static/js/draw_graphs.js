@@ -1,3 +1,52 @@
+function cls() {alert("this class name: "+this.className);};
+
+function getParent(el, parentTagName) {
+    var obj = el;
+    var i=0;
+    alert("object class name: "+obj.className);
+    while (obj.tagName != parentTagName) {
+        i += 1;
+        obj = obj.parentNode;
+        alert(i+" parent: "+obj.className);
+    }
+    return obj;
+    
+}
+
+function AxisCustom(obj_parent) {
+    var minX = obj_parent.fXaxis.fXmin;
+    var maxX = obj_parent.fXaxis.fXmax;
+    var x1_axis = minX-0.08*(maxX-minX);
+    var x2_axis = maxX-0.2*(maxX-minX);
+    var obj = JSROOT.Create('TLine');
+//     JSROOT.Create("TLine", obj);
+//     JSROOT.extend(obj, { _typename: "AxisCustom", fName: "testAxis", fX1NDC: 0.2, fX2NDC: 0.2, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
+    JSROOT.extend(obj, { fTitle: "testAxis", fLineColor: 3, fLineSyle: 1, fLineWidth: 2, fTextAngle: 0, fTextSize: 0.04, fTextAlign: 11, fTextColor: 3, fTextFont: 42 });
+    JSROOT.extend(obj, {fX1: x1_axis, fX2: x1_axis, fY1: obj_parent.fMinimum, fY2: obj_parent.fMaximum });
+//     return obj;
+
+// alert('obj_parent.fMinimum:'+obj_parent.fMinimum+'   obj_parent.fMaximum:' + obj_parent.fMaximum);
+
+    obj_parent.fFunctions.Add(obj,"");
+    
+//     JSROOT.extend(obj, { fNdivisions: 510, fAxisColor: 1, fLabelColor: 3, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035, fTickLength: 0.03, fTitleOffset: 1, fTitleSize: 0.035, fTitleColor: 3, fTitleFont : 42 });
+    
+    
+    
+//     pal.fAxis = JSROOT.Create('TGaxis');
+// //          h1.AddFunction(pal, true);
+//     
+//     var axis = JSROOT.Create('TGaxis');
+//     JSROOT.extend(axis, { fTitle: names[1], fX1: x1_axis, fX2: x1_axis, fY1: h1.fMinimum, fY2: h1.fMaximum, fLineColor: 3} );
+// //     alert("fX1:"+axis.fX1+"  fX2:"+axis.fX2+ "  fY1:"+axis.fY1+ " fY2:"+axis.fY2);
+//     
+// //     mgraph.fFunctions.Add(axis,"");
+// 
+//     var testBox = JSROOT.Create('TBox');
+//     JSROOT.extend(testBox, { fX1: x1_axis, fX2: x2_axis, fY1: h1.fMinimum, fY2: h1.fMaximum, fLineColor: 3 });
+//     
+}
+
 function CreateLegend(num_gr,ncol) {
    var obj = JSROOT.Create("TPave");
    JSROOT.Create("TAttText", obj);
@@ -55,6 +104,13 @@ function updateGUI( id_obj, data ) {
     var mgraph = JSROOT.Create("TMultiGraph");
     for (var igr=0; igr<num_gr; igr++) {
         var nameSens = names[igr];
+//         if (igr<2) {
+            var info = getInfoByNamePVSS(nameSens);
+//             alert('--- updateGUI ---  namePVSS:'+nameSens+'  nameDB:'+info['nameDB']+'  ID:'+info['id']+'  unity:'+info['unity']);
+//         }
+        var unity = info['unity'];
+        if (unity!='None') {nameSens += ',' + unity;}
+        
         if (igr>0 && scale_status) {
             var minYi = Math.min.apply(null,yy[igr]);
             var maxYi = Math.max.apply(null,yy[igr]);
@@ -84,6 +140,8 @@ function updateGUI( id_obj, data ) {
     }
 
     //set fixed Y-range
+    if (typeof(data["minGr"])=='string') {data["minGr"] = parseFloat(data["minGr"])};
+    if (typeof(data["maxGr"])=='string') {data["maxGr"] = parseFloat(data["maxGr"])};
     if (scale_status) {
         mgraph.fMinimum = minY1 - coefDown*dY1;
         mgraph.fMaximum = maxY1 + coefUp*dY1;
@@ -99,7 +157,16 @@ function updateGUI( id_obj, data ) {
         }
     }
 //     window.alert("fMinimum: "+mgraph.fMinimum+",  fMaximum: "+mgraph.fMaximum);
-    
+
+    var h2 = JSROOT.CreateTH1();
+    h2.fTitle = "";
+    h2.fMinimum = mgraph.fMinimum;
+    h2.fMaximum = mgraph.fMaximum;
+    h2.fYaxis.fTitle = "test axis";
+    h2.fXaxis.fXmin = 0;
+    h2.fXaxis.fXmax = 0;
+    h2.fFillColor = 4;
+
     var h1 = JSROOT.CreateTH1(maxX-minX);
     h1.fTitle = title;// + '  ( DB query: ' + timeDB.toString() + ' s )';
     h1.fTitleSize = 1.035;
@@ -114,8 +181,58 @@ function updateGUI( id_obj, data ) {
     if (scale_status) {
         h1.fYaxis.fTitle = names[0];
     }
-    mgraph.fHistogram = h1;
-    mgraph.fFunctions.Add(leg,"");
+//     var frame = mgraph.svg_frame();
+// alert('h1.fXaxis.fChopt:'+h1.fChopt+'  h1.fYaxis.fChopt:'+h1.fYaxis.fChopt)
+//     h1.fXaxis.fChopt = ['-','+'];
+    
+     
+    var axis = JSROOT.Create('TGaxis');
+    var x1_axis = minX+0.2*(maxX-minX);
+    var x2_axis = maxX-0.2*(maxX-minX);
+    JSROOT.extend(axis, { fTitle: names[1], fX1: x1_axis, fX2: x1_axis, fY1: h1.fMinimum, fY2: h1.fMaximum, fLineColor: 3} );
+//     alert("fX1:"+axis.fX1+"  fX2:"+axis.fX2+ "  fY1:"+axis.fY1+ " fY2:"+axis.fY2);
+    
+//     mgraph.fFunctions.Add(axis,"");
 
-    JSROOT.redraw(id_obj, mgraph);
+    var testBox = JSROOT.Create('TBox');
+    JSROOT.extend(testBox, { fX1: x1_axis, fX2: x2_axis, fY1: h1.fMinimum, fY2: h1.fMaximum, fLineColor: 3 });
+    
+//     var canv = JSROOT.Create('TCanvas');
+//     canv.fPrimitives.add(mgraph);
+//     mgraph.fGridx = 1;
+
+    
+//     AxisCustom(h1);
+         
+    mgraph.fFunctions.Add(leg,"");
+//     h1.fFunctions.Add(testBox,"");
+//     h1.fFunctions.Add(axis,"");
+    mgraph.fHistogram = h1;
+         
+    JSROOT.draw(id_obj, mgraph);
+    
+    var x_container = document.getElementsByClassName('xaxis_container');
+//     alert('x_container.length:'+x_container.length);
+    if (x_container.length>0) {
+        var x_container = x_container[0].getElementsByClassName('xaxis_container');
+    }
+//     var pad = JSROOT.Create("TPad");
+//     JSROOT.draw(id_obj, pad);
+    
+//     JSROOT.draw(id_obj, axis, 'same');
+//     var obj = getParent(painter, 'pos_selected');
+//         setTimeout( function frame_exist() {
+//         if (document.getElementsByClassName('root_frame').length>0) {
+//         setTimeout(frame_exist, 100);} }, 100);
+
+//     var frame_list = document.getElementsByClassName('root_canvas');
+//     if (frame_list.length>0) {
+//         h_frame = frame_list[0];
+//         alert('h_frame.fGridx: ',h_frame.fGridx);
+// //         h_frame.fGridx = true;
+// //         JSROOT.redraw(id_obj, mgraph);
+//     }
+//     alert("frame_list.length: "+document.getElementsByClassName('root_frame').length);
+
+//     cls();
 }

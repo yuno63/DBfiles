@@ -38,8 +38,10 @@ function setupSubGroups(category) {
         var check_subgroup = document.getElementById('id_check_subgroup');
         var min_subgroup = document.getElementById('id_min_subgroup');
         var max_subgroup = document.getElementById('id_max_subgroup');
+        var btn_pos_group = document.getElementById('btn_pos_group');
         var pos_group = document.getElementById('pos_group');
         
+        btn_pos_group.innerHTML = '';
         pos_group.innerHTML = '';
         if (category=="All") {return};
 
@@ -153,6 +155,7 @@ $(function(){
 //         var pos_selected = document.querySelector('.pos_selected');
 //         var pos_group = document.querySelector('.pos_group');
         if (btn_Gr_Indiv=="Selected") {
+            document.getElementById('btn_pos_group').innerHTML = '';
             document.getElementById('pos_group').innerHTML = '';
             var selEl = document.getElementById("sensors-selected");
             if (selEl.length==0) {
@@ -307,12 +310,32 @@ function SwitchTab(my_tab, my_content) {
         elem.textContent = "Start";
         clearInterval(window.timerID);
     }
+    document.getElementById('btn_pos_group').innerHTML='';
     document.getElementById('pos_group').innerHTML='';
 };
 
 $(function () {
     $("[data-toggle='tooltip']").tooltip();
 });
+
+function getInfoByNamePVSS(namePVSS) {
+    var category = 'All';
+    var sensPVSS = sensorsPVSS[category];
+    var info = {};
+    for (var i = 0; i < sensPVSS.length; i++){
+        if (namePVSS==sensPVSS[i]) {
+//             alert('i:'+i);
+            info['nameDB'] = sensorsDB[category][i];
+            info['descript'] = sensorsDescript[category][i];
+            info['exp'] = sensorsExp[category][i];
+            info['status'] = sensorsStatus[category][i];
+            info['id'] = sensorsID[category][i];
+            info['unity'] = sensorsUnity[category][i];
+        }
+    }
+//     alert('---getInfoByNamePVSS--- namePVSS:'+namePVSS+'  nameDB:'+info['nameDB']+'  ID:'+info['id']+'  unity:'+info['unity']);
+    return info;
+}
 
 function setTable() {
     var category = $('input[name="seg-1"]:checked').val();
@@ -384,80 +407,27 @@ function setFig3D() {
     $('#id_show_3D').append(cmd);
 };
 
-function setPadDivision() {
-};
 
-function drawGraphGroup(json, fields) {
-    var pos_group = document.getElementById('pos_group');
-    var selected_group = $('input[name="GrIndiv-1"]:checked').val();
-//     pos_group.innerHTML = '';
+function show_pos_select(ibtn) {
+//     alert('show_pos_select  '+ibtn);
+    var indGr = getIndGr();
+    var numPads = indGr.length;
+    var sizePad = getSizePad();
+    var numRows=sizePad[2];
+    var numbShown = Math.ceil(numPads/numRows);
 
-    var category = $('input[name="seg-1"]:checked').val();
-    var subTitles = subGrupTitles[category];
-    
-    var numPads = json['num_gr'].length;
-    var hWind = window.screen.availHeight;
-    var wWind = window.screen.availWidth;
-    
-    var list_pad = document.getElementById('id_grid_group');
-//     var pad_selected = $('input[name="pad_show"]:checked').val();
-    var pad_selected = "NaN";
-    for(var i=0; i<list_pad.length; i++) {
-//         alert(i+"  list_pad.options[i].selected:"+list_pad.options[i].selected);
-        if (list_pad.options[i].selected) {
-            pad_selected = $(list_pad[i]).val();
-        }
-    }
-//     alert("hW,wW: ["+hWind+","+wWind+"];  list_pad.length:"+list_pad.length+"   pad:"+pad_selected);
-
-    var widthPad = wWind/numPads*0.93;  // 1xN
-    var heightPad = hWind*0.75-100;
-    switch(pad_selected) {
-        case '1xN':  
-            break;
-        case '2xN':  
-            if (numPads>1) { widthPad = wWind/Math.ceil(numPads/2)*0.93; } 
-            break;
-        case 'Nx1':  
-            widthPad = wWind*0.93;             
-            break;
-        case 'Nx2':  
-            if (numPads>1) { widthPad = wWind/2.*0.93; }         
-            break;
-    }
-//     window.alert("wWind,hWind: "+wWind+", "+hWind+"   w,h: "+widthPad+", "+heightPad+"   pad:"+pad_selected);
-
-    var cmd = "";
     for (var ipad=0; ipad<numPads; ipad++) {
         var ip = (ipad+1).toString()
-        var cmdDiv = '<div id="object_draw_' + ip +'" class="draw_group" style="float:left; width:' + widthPad + 'px; height:' + heightPad + 'px;"></div>';
-        cmd = cmd+cmdDiv;
-    }
-    pos_group.innerHTML = cmd;
-    
-    var indGr = getIndGr();
-    var minmax = getMinMaxGr();
-//     window.alert("indGr: "+indGr);
-    for (var ipad=0; ipad<numPads; ipad++) {
-        var data = {};
-        for (var i=0;i<fields.length;i++) {
-            var val = json[fields[i]];
-            if (typeof(val) == "object") {
-                data[fields[i]] = val[ipad];
-            } else {
-                data[fields[i]] = val;
-            }
-            
+        var id_pad = document.getElementById("object_draw_"+ip);
+        var stShown = Math.floor(ipad/numbShown) + 1 == ibtn;
+        if (stShown) {
+            id_pad.style.display = 'block';
+        } else {
+            id_pad.style.display = 'none';
         }
-        data['title'] = subTitles[indGr[ipad]];
-        data['minGr'] = minmax['minGr'][ipad];
-        data['maxGr'] = minmax['maxGr'][ipad];
-        data['scale_status'] = false;
-        var id_draw = 'object_draw_'+(ipad+1).toString();
-//         window.alert("id_draw:"+id_draw);
-        updateGUI( id_draw, data );
     }
 };
+
 
 function drawGroup() {
     var indGr = getIndGr();
@@ -465,9 +435,22 @@ function drawGroup() {
 //     window.alert("indGr: "+indGr);
     
     var sizePad = getSizePad();
-    var widthPad=sizePad[0], heightPad=sizePad[1];
-//     window.alert("drawGroup ----   w,h: "+widthPad+", "+heightPad);
+    var widthPad=sizePad[0], heightPad=sizePad[1], numRows=sizePad[2];
+//     window.alert("drawGroup ----   w,h: "+widthPad+", "+heightPad + '  numRows:'+numRows);
 
+    document.getElementById("btn_pos_group").innerHTML = '';
+    if (numRows>1) {
+        var cmdBtn = '<div class="btn-group btn-group-sm">';
+        for (var ibtn=1; ibtn<=numRows; ibtn++) {
+            var ib = ibtn.toString();
+            cmdBtn = cmdBtn + '<button type="button" class="btn btn-info" name="btn_pos_select" ';
+            if (ibtn==0) {cmdBtn = cmdBtn+' checked';} 
+            cmdBtn = cmdBtn + ' onclick="show_pos_select('+ib+')" id="btn_pos_group_' + ib + '" value="' + ib + '">' + ib + '</button>';
+        }
+        cmdBtn = cmdBtn + '</div>';
+        document.getElementById("btn_pos_group").innerHTML = cmdBtn;
+    }
+    
     var cmd = "";
     for (var ipad=0; ipad<numPads; ipad++) {
         var ip = (ipad+1).toString()
@@ -520,6 +503,10 @@ function requestAjax(iGr, ipad) {
         success : function(json) {
             var fields = ['xx', 'yy', 'num_gr', 'minY', 'maxY', 'minX', 'maxX', 'names', 'timeDB'];
             if (selected_group=="Selected") {
+//                 var hWind = window.screen.availHeight;
+//                 var wWind = window.screen.availWidth;
+                var widthPad = window.screen.availWidth*0.97*9/12;
+                var heightPad = window.screen.availHeight*0.75-100;
                 var data = {"minGr": 0, "maxGr": 0};
                 for (var i=0;i<fields.length;i++) {
                     data[fields[i]] = json[fields[i]];
@@ -529,6 +516,8 @@ function requestAjax(iGr, ipad) {
                 var id_draw = 'object_draw';
                 if (mode=="monitor") {id_draw += "_monit";};
 //                 window.alert("id_draw:"+id_draw);
+                document.getElementById(id_draw).style.height = heightPad.toString() + 'px';
+                document.getElementById(id_draw).style.width = widthPad.toString() + 'px';
                 $("#"+id_draw).empty();
                 updateGUI( id_draw, data );
             }
@@ -568,6 +557,7 @@ function getSizePad() {
     var numPads = indGr.length;
     var hWind = window.screen.availHeight;
     var wWind = window.screen.availWidth;
+    var numRows = 1;
     
 //     var pad_selected = $('input[name="pad_show"]:checked').val();
     var pad_selected = "NaN";
@@ -580,22 +570,30 @@ function getSizePad() {
 //     alert("hW,wW: ["+hWind+","+wWind+"];  list_pad.length:"+list_pad.length+"   pad:"+pad_selected);
 
     var widthPad = wWind/numPads*0.93;  // 1xN
-    var heightPad = hWind*0.75-100;
+    var heightPad = hWind*0.78-120;
     switch(pad_selected) {
         case '1xN':  
             break;
         case '2xN':  
-            if (numPads>1) { widthPad = wWind/Math.ceil(numPads/2)*0.93; } 
+            if (numPads>1) { 
+                widthPad = wWind/Math.ceil(numPads/2)*0.93; 
+                numRows = 2;
+            } 
             break;
         case 'Nx1':  
             widthPad = wWind*0.93;             
+            numRows = numPads;
             break;
         case 'Nx2':  
-            if (numPads>1) { widthPad = wWind/2.*0.93; }         
+            if (numPads>1) { 
+                widthPad = wWind/2.*0.93; 
+                numRows = Math.ceil(numPads/2);
+            }         
             break;
     }
+    if (numRows>1) {heightPad -= 30;}
 //     window.alert("getSizePad --- wWind,hWind: "+wWind+", "+hWind+"   w,h: "+widthPad+", "+heightPad+"   pad:"+pad_selected);
-    return [widthPad, heightPad];
+    return [widthPad, heightPad, numRows];
 };
 
 function getMinMaxGr() {
@@ -634,141 +632,6 @@ function getIndGr() {
 //     window.alert("indGr: "+indGr);
     return indGr;
 }
-
-function getSingleRequest(sensor_name) {
-    var data = {"minGr": 0, "maxGr": 0};
-    $.ajax({
-        type: 'POST',
-        url: 'draw/',
-        dataType: 'json',
-        data: {
-            mode: JSON.stringify( "draw" ),
-            category: JSON.stringify( "single" ),
-            names: JSON.stringify( "['"+sensor_name+"']"),
-            npoints: $('#id_npoint').val(),
-            ind_gr: JSON.stringify( "[0]" ),
-            time1: $('#time1_inp').val(),
-            time2: $('#time2_inp').val(),
-            pvss_db: JSON.stringify( $('input[name="pvss"]:checked').val()?"pvss":"db" ),
-            selected_group: JSON.stringify( "none" ),
-            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
-        },
-        // if success post request
-        success : function(json) {
-            var fields = ['xx', 'yy', 'num_gr', 'minY', 'maxY', 'minX', 'maxX'];
-            for (var i=0;i<fields.length;i++) {
-                data[fields[i]] = json[fields[i]];
-            }
-//         alert('data["minGr"]:'+data["minGr"]);
-//             return data;
-        },
-        // if unsuccess post request
-        error : function(xhr,errmsg,err) {
-            console.log(xhr.status + ": " + xhr.responseText);
-        }
-    });
-//     return data;
-};
-
-function draw() {
-    var selected_group = $('input[name="GrIndiv-1"]:checked').val();
-    if (selected_group=="Selected") {
-        select_all();
-    } else {  // Group
-//         var pos_group = document.getElementById('pos_group');
-//         pos_group.innerHTML = '';
-    }
-
-    $.ajax({
-        type: 'POST',
-        url: 'draw/',
-        dataType: 'json',
-        data: {
-            mode: JSON.stringify( "draw" ),
-            category: JSON.stringify( $('input[name="seg-1"]:checked').val() ),
-            names: JSON.stringify( $('#sensors-selected').val() ),
-            npoints: $('#id_npoint').val(),
-            ind_gr: JSON.stringify( getIndGr() ),
-            time1: $('#time1_inp').val(),
-            time2: $('#time2_inp').val(),
-            pvss_db: JSON.stringify( $('input[name="pvss"]:checked').val()?"pvss":"db" ),
-            selected_group: JSON.stringify( $('input[name="GrIndiv-1"]:checked').val() ),
-            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
-        },
-        // if success post request
-        success : function(json) {
-            var fields = ['xx', 'yy', 'num_gr', 'minY', 'maxY', 'minX', 'maxX', 'names', 'timeDB'];
-            if (selected_group=="Selected") {
-                var data = {"minGr": 0, "maxGr": 0};
-                for (var i=0;i<fields.length;i++) {
-                    data[fields[i]] = json[fields[i]];
-                }
-                data['title'] = 'Selected sensors';
-                data['scale_status'] = $('#id_scaled_check').is(":checked");
-                var id_draw = 'object_draw';
-//                 window.alert("id_draw:"+id_draw);
-                $("#"+id_draw).empty();
-                updateGUI( id_draw, data );
-            }
-            else { // Group
-                drawGraphGroup( json, fields );
-            }
-        },
-        // if unsuccess post request
-        error : function(xhr,errmsg,err) {
-            console.log(xhr.status + ": " + xhr.responseText);
-        }
-    });
-    deselect_all();
-//     $('#id_btn_draw').prop("disabled", false);
-};
-
-function monitor111() {
-    select_all();
-    var selected_group = $('input[name="GrIndiv-1"]:checked').val();
-
-    $.ajax({
-        type: 'POST',
-        url: 'draw/',
-        data: {
-            mode: JSON.stringify( "monitor" ),
-            category: JSON.stringify( $('input[name="seg-1"]:checked').val() ),
-            names: JSON.stringify( $('#sensors-selected').val() ),
-            npoints: $('#id_npoint_monitor').val(),
-            ind_gr: JSON.stringify( getIndGr() ),
-            time_interval: $('#time_interval').val(),
-            time_monitor_shift: JSON.stringify( $('#id_time_monitor_shift').val() ),
-            pvss_db: JSON.stringify( $('input[name="pvss"]:checked').val()?"pvss":"db" ),
-            selected_group: JSON.stringify( selected_group ),
-            csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
-        },
-        // if success post request
-        success : function(json) {
-            $('#id_time_monitor').text(json['maxTstr']);
-            var fields = ['xx', 'yy', 'num_gr', 'minY', 'maxY', 'minX', 'maxX', 'names', 'timeDB'];
-            var data = {"minGr": 0, "maxGr": 0};
-            if (selected_group=="Selected") {
-                for (var i=0;i<fields.length;i++) {
-                    data[fields[i]] = json[fields[i]];
-                }
-                data['title'] = 'Selected sensors';
-                data['scale_status'] = $('#id_scaled_check_monit').is(":checked");
-                var id_draw = 'object_draw_monit';
-//                 window.alert("id_draw:"+id_draw);
-                $("#"+id_draw).empty();
-                updateGUI( id_draw, data );
-            }
-            else { // Group
-                drawGraphGroup( json, fields );
-            }            
-        },
-        // if unsucess post request
-        error : function(xhr,errmsg,err) {
-            console.log(xhr.status + ": " + xhr.responseText);
-        }
-    });
-    deselect_all();
-};
 
 function save() {
     select_all();
@@ -825,6 +688,7 @@ function cleanGraphs(mode){
     if ($('input[name="GrIndiv-1"]:checked').val()=="Selected") {
             document.getElementById('object_draw'+mode).innerHTML = '';
     } else {  // Group
+        document.getElementById("btn_pos_group").innerHTML = '';
         document.getElementById('pos_group').innerHTML = '';
     }
 };
@@ -835,7 +699,15 @@ function drawGraphs(){
 //         draw();
         requestAjax();
     } else {  // Group
-        drawGroup();    
+        var second = function(){show_pos_select(1);};
+        function first(callback) {
+            drawGroup();
+//             callback.call(second);
+        }
+        first(second);
+//         drawGroup();    
+//         show_pos_select(1);
+//         setTimeout("drawGroup();show_pos_select(1)",5000);
     }
 };
 
@@ -858,6 +730,7 @@ $(document).on('submit', '#draw_form', function(e){
 
 //     $('#modal_show').modal('hide');
     $('#id_btn_draw').prop("disabled", false);
+    
 });
 
 $(document).on('submit', '#draw_monit_form', function(e){
