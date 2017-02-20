@@ -318,13 +318,18 @@ $(function () {
     $("[data-toggle='tooltip']").tooltip();
 });
 
-function getInfoByNamePVSS(namePVSS) {
+function getInfoByName_PVSS_DB(nameSens,st_pvss_db) {
     var category = 'All';
-    var sensPVSS = sensorsPVSS[category];
+    if (st_pvss_db=='pvss') {
+        var sens_PVSS_DB = sensorsPVSS[category];
+    } else {
+        var sens_PVSS_DB = sensorsDB[category];
+    }
     var info = {};
-    for (var i = 0; i < sensPVSS.length; i++){
-        if (namePVSS==sensPVSS[i]) {
+    for (var i = 0; i < sens_PVSS_DB.length; i++){
+        if (nameSens==sens_PVSS_DB[i]) {
 //             alert('i:'+i);
+            info['namePVSS'] = sensorsPVSS[category][i];
             info['nameDB'] = sensorsDB[category][i];
             info['descript'] = sensorsDescript[category][i];
             info['exp'] = sensorsExp[category][i];
@@ -333,7 +338,7 @@ function getInfoByNamePVSS(namePVSS) {
             info['unity'] = sensorsUnity[category][i];
         }
     }
-//     alert('---getInfoByNamePVSS--- namePVSS:'+namePVSS+'  nameDB:'+info['nameDB']+'  ID:'+info['id']+'  unity:'+info['unity']);
+//     alert('---getInfoByName_PVSS_DB--- nameSens:'+nameSens+'  nameDB:'+info['nameDB']+'  ID:'+info['id']+'  unity:'+info['unity']);
     return info;
 }
 
@@ -479,7 +484,9 @@ function requestAjax(iGr, ipad) {
         indGr = [iGr];
     }
     var mode = document.getElementById("tb_monit").className =='active' ? "monitor" : "draw";
-//     alert("requestAjax   mode:"+mode);
+    var pvss_db = $('input[name="pvss"]:checked').val();
+    var st_pvss_db = (pvss_db=="Yes") ? "pvss" : "db";
+//     alert("requestAjax   mode:"+mode+"   pvss_db:"+pvss_db);
     
     $.ajax({
         type: 'POST',
@@ -495,7 +502,7 @@ function requestAjax(iGr, ipad) {
             time_monitor_shift: JSON.stringify( $('#id_time_monitor_shift').val() ),
             time1: $('#time1_inp').val(),
             time2: $('#time2_inp').val(),
-            pvss_db: JSON.stringify( $('input[name="pvss"]:checked').val()?"pvss":"db" ),
+            pvss_db: JSON.stringify( st_pvss_db ),
             selected_group: JSON.stringify( $('input[name="GrIndiv-1"]:checked').val() ),
             csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
         },
@@ -513,6 +520,7 @@ function requestAjax(iGr, ipad) {
                 }
                 data['title'] = 'Selected sensors';
                 data['scale_status'] = $('#id_scaled_check').is(":checked");
+                data['st_pvss_db'] = st_pvss_db;
                 var id_draw = 'object_draw';
                 if (mode=="monitor") {id_draw += "_monit";};
 //                 window.alert("id_draw:"+id_draw);
@@ -536,6 +544,7 @@ function requestAjax(iGr, ipad) {
                 data['minGr'] = minmax['minGr'][ipad];
                 data['maxGr'] = minmax['maxGr'][ipad];
                 data['scale_status'] = false;
+                data['st_pvss_db'] = st_pvss_db;
                 var id_draw = 'object_draw_'+(ipad+1).toString();
         //         window.alert("id_draw:"+id_draw);
                 updateGUI( id_draw, data );

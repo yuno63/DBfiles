@@ -94,6 +94,8 @@ function updateGUI( id_obj, data ) {
     var title = data['title'];
     var timeDB = Math.round(data['timeDB']*1000)/1000;
     var scale_status = data['scale_status']; 
+    var st_pvss_db = data['st_pvss_db'];
+//     alert('st_pvss_db:'+st_pvss_db);
     
     var maxLegCol = 8;
     var ncol = Math.ceil(num_gr/maxLegCol);
@@ -105,8 +107,8 @@ function updateGUI( id_obj, data ) {
     for (var igr=0; igr<num_gr; igr++) {
         var nameSens = names[igr];
 //         if (igr<2) {
-            var info = getInfoByNamePVSS(nameSens);
-//             alert('--- updateGUI ---  namePVSS:'+nameSens+'  nameDB:'+info['nameDB']+'  ID:'+info['id']+'  unity:'+info['unity']);
+            var info = getInfoByName_PVSS_DB(nameSens,st_pvss_db);
+//             alert('--- updateGUI ---  namePVSS:'+info['namePVSS']+'  nameDB:'+info['nameDB']+'  ID:'+info['id']+'  unity:'+info['unity']);
 //         }
         var unity = info['unity'];
         if (unity!='None') {nameSens += ',' + unity;}
