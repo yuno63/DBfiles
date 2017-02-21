@@ -228,7 +228,9 @@ $(function(){
 
 function setLenSaveSelected(){
     var selEl = document.getElementById("sensors-selected");
-    $('#lb_save_selected').text("Selected ("+selEl.length+")");
+    if (selEl) {
+        $('#lb_save_selected').text("Selected ("+selEl.length+")");
+    }
 }
 
 function appendSelected(){
@@ -256,8 +258,10 @@ function appendSelected(){
 
 function select_all(){
     var selEl = document.getElementById("sensors-selected");
-    for(var i=0; i<selEl.length; i++) {
-        selEl.options[i].selected = true;
+    if (selEl) {
+        for(var i=0; i<selEl.length; i++) {
+            selEl.options[i].selected = true;
+        }
     }
 }
 
@@ -276,11 +280,11 @@ function check_btn_save() {
             $('#id_btn_save').prop("disabled", true);
         }
     } 
-    var txt = $('#txt_file_name').val();
-//     window.alert("---- check_btn_save ------- txt:"+txt+"("+txt.length+")");
-    if (txt.length==0) {
-        $('#id_btn_save').prop("disabled", true);
-    }
+//     var txt = document.getElementById('txt_file_name').val();
+// //     window.alert("---- check_btn_save ------- txt:"+txt+"("+txt.length+")");
+//     if (txt.type==undefined) {
+//         $('#id_btn_save').prop("disabled", true);
+//     }
 }
 
 function clearSelected(){
@@ -310,8 +314,10 @@ function SwitchTab(my_tab, my_content) {
         elem.textContent = "Start";
         clearInterval(window.timerID);
     }
-    document.getElementById('btn_pos_group').innerHTML='';
-    document.getElementById('pos_group').innerHTML='';
+    var bpg = document.getElementById('btn_pos_group');
+    if (bpg!=null) {bpg.innerHTML='';}
+    var pg = document.getElementById('pos_group');
+    if (pg!=null) {pg.innerHTML='';}
 };
 
 $(function () {
@@ -434,14 +440,9 @@ function show_pos_select(ibtn) {
 };
 
 
-function drawGroup() {
-    var indGr = getIndGr();
-    var numPads = indGr.length;
-//     window.alert("indGr: "+indGr);
-    
+function setBtnGroup() {
     var sizePad = getSizePad();
-    var widthPad=sizePad[0], heightPad=sizePad[1], numRows=sizePad[2];
-//     window.alert("drawGroup ----   w,h: "+widthPad+", "+heightPad + '  numRows:'+numRows);
+    var numRows=sizePad[2];
 
     document.getElementById("btn_pos_group").innerHTML = '';
     if (numRows>1) {
@@ -455,6 +456,15 @@ function drawGroup() {
         cmdBtn = cmdBtn + '</div>';
         document.getElementById("btn_pos_group").innerHTML = cmdBtn;
     }
+};
+
+
+function drawGroup() {
+    var indGr = getIndGr();
+    var numPads = indGr.length;
+//     window.alert("indGr: "+indGr);
+    var sizePad = getSizePad();
+    var widthPad=sizePad[0], heightPad=sizePad[1];
     
     var cmd = "";
     for (var ipad=0; ipad<numPads; ipad++) {
@@ -470,6 +480,8 @@ function drawGroup() {
     for (var ipad=0; ipad<numPads; ipad++) {
         requestAjax( indGr[ipad], ipad );
     }
+
+//     setBtnGroup();
 };
 
 function requestAjax(iGr, ipad) {
@@ -708,15 +720,20 @@ function drawGraphs(){
 //         draw();
         requestAjax();
     } else {  // Group
-        var second = function(){show_pos_select(1);};
-        function first(callback) {
-            drawGroup();
-//             callback.call(second);
-        }
-        first(second);
-//         drawGroup();    
-//         show_pos_select(1);
-//         setTimeout("drawGroup();show_pos_select(1)",5000);
+        $.when( drawGroup() ).then( function (x) {
+            setBtnGroup();
+//             show_pos_select(1); 
+            
+        });
+//         var second = function(){show_pos_select(1);};
+//         function first(callback) {
+//             drawGroup();
+// //             callback.call(second);
+//         }
+//         first(second);
+// //         drawGroup();    
+// //         show_pos_select(1);
+// //         setTimeout("drawGroup();show_pos_select(1)",5000);
     }
 };
 

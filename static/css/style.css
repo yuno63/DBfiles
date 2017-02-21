@@ -109,8 +109,8 @@ body {
   -moz-box-orient: vertical;
   display: inline-block;
   vertical-align: middle;
-  *vertical-align: auto;
-  -moz-border-radius: 4px;
+/*   vertical-align: auto; */
+/*   -moz-border-radius: 4px; */
   -webkit-border-radius: 4px;
   -o-border-radius: 4px;
   -ms-border-radius: 4px;
@@ -139,7 +139,7 @@ body {
   margin-right: -3px;
 }
 .segmented-button label {
-  *display: inline;
+  display: inline;
   padding: 4px;
 }
 .segmented-button label:hover {
@@ -231,7 +231,7 @@ body {
     float:left;
 }        
 
-.container_gr {
+/*.container_gr {
   padding-top: -10px;
   padding-bottom: -10px;
-}
+}*/
