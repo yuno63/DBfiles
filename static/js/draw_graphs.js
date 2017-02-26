@@ -77,6 +77,31 @@ function CreateLegendEntry(obj, lbl) {
    return entry;
 }
 
+function draw_grid() {
+    var id_pad = document.getElementById("object_draw");
+    var id_canvas = id_pad.childNodes[0];
+    
+    var root_frame = id_canvas.getElementsByClassName("root_frame")[0];
+    var grid_layer = id_canvas.getElementsByClassName("grid_layer")[0];
+
+    var x_axis = id_canvas.getElementsByClassName("xaxis_container")[0];
+    var y_axis = id_canvas.getElementsByClassName("yaxis_container")[0];
+    
+    var x_path = x_axis.childNodes[0];
+    var x_d = "M0,39v366" // x_path.getAttribute('d');
+
+// alert('x_d:'+x_d);
+// alert();
+//     if (x_d.length > 0) {
+        grid_layer.append("svg:path")
+            .attr("class", "xgrid")
+            .attr("d", x_d)
+            .style("stroke", "black")
+            .style("stroke-width", 1)
+            .style("stroke-dasharray", [1, 3]);
+//     }
+}
+
 function updateGUI( id_obj, data ) {
     // this is just generation of graph
 //     window.alert("---- updateGUI ------");
@@ -195,7 +220,7 @@ function updateGUI( id_obj, data ) {
 //     alert("fX1:"+axis.fX1+"  fX2:"+axis.fX2+ "  fY1:"+axis.fY1+ " fY2:"+axis.fY2);
     
 //     mgraph.fFunctions.Add(axis,"");
-
+    
     var testBox = JSROOT.Create('TBox');
     JSROOT.extend(testBox, { fX1: x1_axis, fX2: x2_axis, fY1: h1.fMinimum, fY2: h1.fMaximum, fLineColor: 3 });
     
@@ -207,11 +232,13 @@ function updateGUI( id_obj, data ) {
 //     AxisCustom(h1);
          
     mgraph.fFunctions.Add(leg,"");
-//     h1.fFunctions.Add(testBox,"");
+//     h1.fFunctions.Add(draw_grid,"");
 //     h1.fFunctions.Add(axis,"");
     mgraph.fHistogram = h1;
          
     JSROOT.draw(id_obj, mgraph);
+    
+//     draw_grid();
     
     var x_container = document.getElementsByClassName('xaxis_container');
 //     alert('x_container.length:'+x_container.length);

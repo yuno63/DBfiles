@@ -150,7 +150,7 @@ $(function(){
         var category = $('input[name="seg-1"]:checked').val();
         var name_child_list = document.getElementsByName('check_' + category);
 //         window.alert("btn_Gr_Indiv:"+btn_Gr_Indiv ); 
-//         var pos_selected = $(".pos_selected").html();
+        var pos_selected = document.getElementById('pos_selected');
 //         var pos_group = $(".pos_group").html();
 //         var pos_selected = document.querySelector('.pos_selected');
 //         var pos_group = document.querySelector('.pos_group');
@@ -210,8 +210,7 @@ $(function(){
             document.getElementById('div_scaled_check_monit').style.display = 'none';
 //             $(".pos_group").style.display = 'block';
 //             $(".pos_selected").style.display = 'none';
-
-            document.getElementById('pos_selected').style.display = 'none';
+            if (pos_selected) {pos_selected.style.display = 'none';}
             document.getElementById('pos_group').style.display = 'block';
 //             document.getElementById('pos_group').style.visibility = 'visible';
 
@@ -424,21 +423,36 @@ function show_pos_select(ibtn) {
     var indGr = getIndGr();
     var numPads = indGr.length;
     var sizePad = getSizePad();
+    var widthPad=sizePad[0], heightPad=sizePad[1];
     var numRows=sizePad[2];
     var numbShown = Math.ceil(numPads/numRows);
+    var stNotCorrectVisibility = false;
 
     for (var ipad=0; ipad<numPads; ipad++) {
         var ip = (ipad+1).toString()
         var id_pad = document.getElementById("object_draw_"+ip);
         var stShown = Math.floor(ipad/numbShown) + 1 == ibtn;
+        
         if (stShown) {
             id_pad.style.display = 'block';
+            id_pad.style.visibility = 'visible';            
         } else {
-            id_pad.style.display = 'none';
+            if (id_pad.childNodes.length>0) {
+                id_pad.style.display = 'none';
+            }
+            id_pad.style.visibility = 'visible';   
+        }
+        if (id_pad.childNodes.length>0) {
+            id_pad.childNodes[0].setAttribute("visibility","visible");
+            id_pad.childNodes[0].draw_width = widthPad;
+            id_pad.childNodes[0].draw_height = heightPad;
+        }
+        else {
+            stNotCorrectVisibility = true;
         }
     }
+    return stNotCorrectVisibility;
 };
-
 
 function setBtnGroup() {
     var sizePad = getSizePad();
@@ -480,7 +494,9 @@ function drawGroup() {
     for (var ipad=0; ipad<numPads; ipad++) {
         requestAjax( indGr[ipad], ipad );
     }
-
+//     if (fcn && typeof(fcn) === "function") {
+//         fcn();
+//     }
 //     setBtnGroup();
 };
 
@@ -714,48 +730,55 @@ function cleanGraphs(mode){
     }
 };
 
+// function test(){
+//   var d = $.Deferred();
+//   setTimeout(function(){
+//     drawGroup(); // выполняем интересующую функцию
+//     d.resolve();  // изменяем состояние Deferred-объекта на "выполнено"
+//   }, 2000);
+//   return d;
+// }
+
+function checkGraphPainted() {
+    var stCorrectlyPainted = true;
+    if ($('input[name="GrIndiv-1"]:checked').val()=="Selected") {
+        var id_pad = document.getElementById("object_draw");
+        if (id_pad.childNodes.length==0) stCorrectlyPainted = false;
+    } else {  // Group
+        var indGr = getIndGr();
+        var numPads = indGr.length;
+        for (var ipad=0; ipad<numPads; ipad++) {
+            var ip = (ipad+1).toString()
+            var id_pad = document.getElementById("object_draw_"+ip);
+            if (id_pad.childNodes.length==0) stCorrectlyPainted = false;
+        }
+        if (stCorrectlyPainted) {
+            show_pos_select(1);
+        }
+    }
+    if (stCorrectlyPainted) {
+        $("#GraphShowTimer").TimeCircles().stop();
+        $('#modal_show').modal('hide');
+        clearInterval(window.timerPainter);
+    }
+}
 
 function drawGraphs(){
     if ( $('input[name="GrIndiv-1"]:checked').val()=="Selected" ) {
-//         draw();
         requestAjax();
     } else {  // Group
-        $.when( drawGroup() ).then( function (x) {
-            setBtnGroup();
-//             show_pos_select(1); 
-            
-        });
-//         var second = function(){show_pos_select(1);};
-//         function first(callback) {
-//             drawGroup();
-// //             callback.call(second);
-//         }
-//         first(second);
-// //         drawGroup();    
-// //         show_pos_select(1);
-// //         setTimeout("drawGroup();show_pos_select(1)",5000);
+        drawGroup();
+        setBtnGroup();
     }
 };
 
 $(document).on('submit', '#draw_form', function(e){
+    $("#GraphShowTimer").data('date','00:00').TimeCircles().start();
+    $('#modal_show').modal('show');
     cleanGraphs('');
-    $('#id_btn_draw').prop("disabled", true); 
-//     setTimeout("$('#id_btn_draw').prop('disabled', true);e.preventDefault();",100);
-//     setTimeout( function run() {
-//         $('#id_btn_draw').prop("disabled", true);  
-//         setTimeout(run, 100);}, 100);
     e.preventDefault(); // cancell the browser actions
-    
-//     $('#modal_show').modal('show');
-//     setTimeout(function run() {
-//  $('#modal_show').modal('show');  setTimeout(run, 100);
-// }, 100);
-//     setTimeout("draw();$('#modal_show').modal('hide');",100);
-    
     drawGraphs();
-
-//     $('#modal_show').modal('hide');
-    $('#id_btn_draw').prop("disabled", false);
+    timerPainter = setInterval(checkGraphPainted, 500);
     
 });
 
