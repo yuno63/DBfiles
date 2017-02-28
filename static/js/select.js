@@ -730,14 +730,49 @@ function cleanGraphs(mode){
     }
 };
 
-// function test(){
-//   var d = $.Deferred();
-//   setTimeout(function(){
-//     drawGroup(); // выполняем интересующую функцию
-//     d.resolve();  // изменяем состояние Deferred-объекта на "выполнено"
-//   }, 2000);
-//   return d;
-// }
+function draw_grid(xy) {
+    // xy: "x","y"
+    var grid_on = $('#id_grid_check').is(":checked");
+//     alert('grid_on:'+grid_on);
+
+    var id_pad = document.getElementById("object_draw");
+    var id_canvas = id_pad.childNodes[0];
+    
+    var root_frame = id_canvas.getElementsByClassName("root_frame")[0];
+    var grid_layer = id_canvas.getElementsByClassName("grid_layer")[0];
+
+    var xy_axis = id_canvas.getElementsByClassName(xy+"axis_container")[0];
+    var xy_axis_labels = xy_axis.getElementsByClassName("axis_labels")[0];
+    
+    var xy_nticks = xy_axis_labels.childElementCount;
+    
+    var w = root_frame.draw_width;
+    var h = root_frame.draw_height;
+    
+    var xy_d = "";
+    for (i=0; i<xy_nticks; i++) {
+        if (xy=="x") {
+            var val = xy_axis_labels.childNodes[i].x.baseVal[0].valueAsString;
+            xy_d += "M"+val+",0v"+h;
+        } else {
+            var val = xy_axis_labels.childNodes[i].y.baseVal[0].valueAsString;
+            xy_d += "M0,"+val+"h"+w;
+        }
+    }
+    
+    var path = document.createElementNS("http://www.w3.org/2000/svg", 'path'); 
+    path.setAttribute("class", xy+"grid");
+    path.setAttribute("d",xy_d);
+    path.style.stroke = "black";
+    path.style.strokeWidth = 1; 
+    path.style.strokeDasharray = "1, 3"; 
+    
+    if (grid_on) {
+        grid_layer.appendChild(path);
+    } else {
+        grid_layer.removeChild(path);
+    }
+}
 
 function checkGraphPainted() {
     var stCorrectlyPainted = true;
@@ -760,6 +795,8 @@ function checkGraphPainted() {
         $("#GraphShowTimer").TimeCircles().stop();
         $('#modal_show').modal('hide');
         clearInterval(window.timerPainter);
+        draw_grid("x");
+        draw_grid("y");
     }
 }
 

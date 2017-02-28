@@ -77,31 +77,6 @@ function CreateLegendEntry(obj, lbl) {
    return entry;
 }
 
-function draw_grid() {
-    var id_pad = document.getElementById("object_draw");
-    var id_canvas = id_pad.childNodes[0];
-    
-    var root_frame = id_canvas.getElementsByClassName("root_frame")[0];
-    var grid_layer = id_canvas.getElementsByClassName("grid_layer")[0];
-
-    var x_axis = id_canvas.getElementsByClassName("xaxis_container")[0];
-    var y_axis = id_canvas.getElementsByClassName("yaxis_container")[0];
-    
-    var x_path = x_axis.childNodes[0];
-    var x_d = "M0,39v366" // x_path.getAttribute('d');
-
-// alert('x_d:'+x_d);
-// alert();
-//     if (x_d.length > 0) {
-        grid_layer.append("svg:path")
-            .attr("class", "xgrid")
-            .attr("d", x_d)
-            .style("stroke", "black")
-            .style("stroke-width", 1)
-            .style("stroke-dasharray", [1, 3]);
-//     }
-}
-
 function updateGUI( id_obj, data ) {
     // this is just generation of graph
 //     window.alert("---- updateGUI ------");
