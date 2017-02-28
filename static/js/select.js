@@ -174,6 +174,7 @@ $(function(){
             document.getElementById('div_pad_select').style.display = 'none';
             document.getElementById('div_pad_select_monitor').style.display = 'none';
             document.getElementById('div_scaled_check').style.display = 'block';
+            document.getElementById('div_grid_check').style.display = 'block';
             document.getElementById('div_scaled_check_monit').style.display = 'block';
 //             $(".pos_group").style.display = 'none';
 //             $(".pos_selected").style.display = 'block';
@@ -207,6 +208,7 @@ $(function(){
             document.getElementById('div_pad_select').style.display = 'block';
             document.getElementById('div_pad_select_monitor').style.display = 'block';
             document.getElementById('div_scaled_check').style.display = 'none';
+            document.getElementById('div_grid_check').style.display = 'none';
             document.getElementById('div_scaled_check_monit').style.display = 'none';
 //             $(".pos_group").style.display = 'block';
 //             $(".pos_selected").style.display = 'none';
