@@ -212,31 +212,5 @@ function updateGUI( id_obj, data ) {
     mgraph.fHistogram = h1;
          
     JSROOT.draw(id_obj, mgraph);
-    
-//     draw_grid();
-    
-    var x_container = document.getElementsByClassName('xaxis_container');
-//     alert('x_container.length:'+x_container.length);
-    if (x_container.length>0) {
-        var x_container = x_container[0].getElementsByClassName('xaxis_container');
-    }
-//     var pad = JSROOT.Create("TPad");
-//     JSROOT.draw(id_obj, pad);
-    
-//     JSROOT.draw(id_obj, axis, 'same');
-//     var obj = getParent(painter, 'pos_selected');
-//         setTimeout( function frame_exist() {
-//         if (document.getElementsByClassName('root_frame').length>0) {
-//         setTimeout(frame_exist, 100);} }, 100);
-
-//     var frame_list = document.getElementsByClassName('root_canvas');
-//     if (frame_list.length>0) {
-//         h_frame = frame_list[0];
-//         alert('h_frame.fGridx: ',h_frame.fGridx);
-// //         h_frame.fGridx = true;
-// //         JSROOT.redraw(id_obj, mgraph);
-//     }
-//     alert("frame_list.length: "+document.getElementsByClassName('root_frame').length);
-
-//     cls();
+ 
 }

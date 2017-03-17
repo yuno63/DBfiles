@@ -381,10 +381,25 @@ function setTable() {
 };
 
 function setFig3D() {
+//     alert("setFig3D");
     var category = $('input[name="seg-1"]:checked').val();
     $('#id_show_3D').empty();
     var figName = "";
     switch(category) {
+        case 'All':
+            var filename = "/home/yuriy/web_development/DisplayDB311/media/images/MyGeom.root";
+// { name:"building", asurl: true, file: "geom/building.root", item: "geom;1", opt: "allz", title: "Geometry from tutorials/geom/building.C" }
+            var itemname = "simple1;1";
+            var opt = "allz";
+//             alert("3D All");
+            JSROOT.OpenFile(filename, function(file) {
+                alert("OpenFile");
+                file.ReadObject("simple1;1", function(obj) {
+                    alert("ReadObject");
+                    JSROOT.draw("id_show_3D", obj, opt);
+                });
+            });
+            break;
         case 'CRP':
             figName = "LAPP.png";
             break;
@@ -416,7 +431,8 @@ function setFig3D() {
     cmd = '<img src="https://cdn.rawgit.com/yuno63/DBfiles/master/images/' + 
             figName + '" style="height: 420px; width: 700px;">';
 //     cmd = '<img src="media/images/' + figName + '" style="height: 420px; width: 700px;">';
-    $('#id_show_3D').append(cmd);
+    if (category!="All") 
+        {$('#id_show_3D').append(cmd);};
 };
 
 
@@ -524,7 +540,7 @@ function requestAjax(iGr, ipad) {
         dataType: 'json',
         data: {
             mode: JSON.stringify( mode ),
-            category: JSON.stringify( $('input[name="seg-1"]:checked').val() ),
+            category: JSON.stringify( category ),
             names: JSON.stringify( $('#sensors-selected').val() ),
             npoints: $('#id_npoint').val(),
             ind_gr: JSON.stringify( indGr ),
@@ -538,6 +554,9 @@ function requestAjax(iGr, ipad) {
         },
         // if success post request
         success : function(json) {
+            idp=document.getElementById('pos_group');
+            var txt='<div id="id_test" style="display:none;">BASE_DIR:' + json['BASE_DIR'] +';</div>';
+//             idp.innerHTML=txt;
             var fields = ['xx', 'yy', 'num_gr', 'minY', 'maxY', 'minX', 'maxX', 'names', 'timeDB'];
             if (selected_group=="Selected") {
 //                 var hWind = window.screen.availHeight;
@@ -677,20 +696,24 @@ function save() {
     $.ajax({
         type: 'POST',
         url: 'draw/',
+        dataType: 'json',
         data: {
             mode: JSON.stringify( "save" ),
+            category: JSON.stringify( $('input[name="seg-1"]:checked').val() ),
+            opt_sens_save: JSON.stringify( $('input[name="opt-sens-save"]:checked').val() ),
             file_name: $('#txt_file_name').val(),
             names: JSON.stringify( $('#sensors-selected').val() ),
             time1: $('#time1-file').val(),
             time2: $('#time2-file').val(),
             pvss_db: JSON.stringify( $('input[name="pvss"]:checked').val()?"pvss":"db" ),
+            selected_group: JSON.stringify( $('input[name="GrIndiv-1"]:checked').val() ),
             csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
         },
         // if success post request
         success : function(json) {
-            window.alert("---- save success ------- json:"+json["fnSaved"]);
+            window.alert('---- save success ------- json["num_gr"]:'+json["num_gr"]);
             var filePath = json["fnSaved"];
-            $('<form></form>').attr('action', filePath).appendTo('body').submit().remove();
+//             $('<form></form>').attr('action', filePath).appendTo('body').submit().remove();
         },
         // if unsuccess post request
         error : function(xhr,errmsg,err) {
