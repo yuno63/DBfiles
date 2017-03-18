@@ -315,6 +315,9 @@ function SwitchTab(my_tab, my_content) {
         elem.textContent = "Start";
         clearInterval(window.timerID);
     }
+    if (my_tab=="tb_3D") {
+        setFig3D();
+    }
     var bpg = document.getElementById('btn_pos_group');
     if (bpg!=null) {bpg.innerHTML='';}
     var pg = document.getElementById('pos_group');
@@ -387,15 +390,11 @@ function setFig3D() {
     var figName = "";
     switch(category) {
         case 'All':
-            var filename = "/home/yuriy/web_development/DisplayDB311/media/images/MyGeom.root";
-// { name:"building", asurl: true, file: "geom/building.root", item: "geom;1", opt: "allz", title: "Geometry from tutorials/geom/building.C" }
+            var filename = "https://cdn.rawgit.com/yuno63/DBfiles/master/images/MyGeom.root";
             var itemname = "simple1;1";
-            var opt = "allz";
-//             alert("3D All");
+            var opt = "all";
             JSROOT.OpenFile(filename, function(file) {
-                alert("OpenFile");
-                file.ReadObject("simple1;1", function(obj) {
-                    alert("ReadObject");
+                file.ReadObject(itemname, function(obj) {
                     JSROOT.draw("id_show_3D", obj, opt);
                 });
             });
