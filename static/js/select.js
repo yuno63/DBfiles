@@ -390,7 +390,7 @@ function setFig3D() {
     var figName = "";
     switch(category) {
         case 'All':
-            var filename = "https://cdn.rawgit.com/yuno63/DBfiles/master/images/MyGeom.root";
+            var filename = "https://rawgit.com/yuno63/DBfiles/master/images/MyGeom.root";
             var itemname = "simple1;1";
             var opt = "all";
             JSROOT.OpenFile(filename, function(file) {
