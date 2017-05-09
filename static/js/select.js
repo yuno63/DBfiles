@@ -119,13 +119,17 @@ function changeSaveGroup() {
         lb_selected.style.fontWeight="normal";
         lb_categ.style.fontWeight="bold";
         lb_all.style.fontWeight="normal";
-        $('#id_btn_save').prop("disabled", false);
+        if (document.getElementById('txt_file_name').value.length>0) {
+            $('#id_btn_save').prop("disabled", false);
+        }
     }
     else if($('input[name="opt-sens-save"]:checked').val()=="all"){
         lb_selected.style.fontWeight="normal";
         lb_categ.style.fontWeight="normal";
         lb_all.style.fontWeight="bold";
-        $('#id_btn_save').prop("disabled", false);
+        if (document.getElementById('txt_file_name').value.length>0) {
+            $('#id_btn_save').prop("disabled", false);
+        }
     }
     check_btn_save();
 }
@@ -249,7 +253,9 @@ function appendSelected(){
             $('#id_clear').prop("disabled", false);
             $('#id_btn_draw').prop("disabled", false);
             $('#id_btn_monit').prop("disabled", false);
-            $('#id_btn_save').prop("disabled", false);
+            if (document.getElementById('txt_file_name').value.length>0) {
+                $('#id_btn_save').prop("disabled", false);
+            }
         }
     }
     setLenSaveSelected();
@@ -274,15 +280,20 @@ function deselect_all(){
 }
 
 function check_btn_save() {
+    var txt = document.getElementById('txt_file_name').value;
+//     window.alert("---- check_btn_save ------- txt:"+txt+"("+txt.length+")");
+    $('#id_btn_save').prop("disabled", false);
+    
     setLenSaveSelected();
+    if (txt.length==0) {
+        $('#id_btn_save').prop("disabled", true);
+    }
     var selEl = document.getElementById("sensors-selected");
     if ($('input[name="opt-sens-save"]:checked').val()=="selected") {
         if (selEl.length==0) {
             $('#id_btn_save').prop("disabled", true);
         }
     } 
-//     var txt = document.getElementById('txt_file_name').val();
-// //     window.alert("---- check_btn_save ------- txt:"+txt+"("+txt.length+")");
 //     if (txt.type==undefined) {
 //         $('#id_btn_save').prop("disabled", true);
 //     }
@@ -386,18 +397,28 @@ function setTable() {
 function setFig3D() {
 //     alert("setFig3D");
     var category = $('input[name="seg-1"]:checked').val();
-    $('#id_show_3D').empty();
+    if (category=="All") {
+        document.getElementById("id_show_3D_All").style.display = 'block';  
+        document.getElementById("id_show_3D").style.display = 'none';  
+    } else {
+        document.getElementById("id_show_3D").style.display = 'block';  
+        document.getElementById("id_show_3D_All").style.display = 'none';  
+        $('#id_show_3D').empty();
+    }
     var figName = "";
     switch(category) {
         case 'All':
-            var filename = "https://rawgit.com/yuno63/DBfiles/master/images/MyGeom.root";
-            var itemname = "simple1;1";
-            var opt = "all";
-            JSROOT.OpenFile(filename, function(file) {
-                file.ReadObject(itemname, function(obj) {
-                    JSROOT.draw("id_show_3D", obj, opt);
+            if ( $('#id_show_3D_All').is(':empty') ) {
+//             if ( document.getElementById('id_show_3D_All').innerHTML == "" ) {
+                var filename = "https://rawgit.com/yuno63/DBfiles/master/images/MyGeom.root";
+                var itemname = "simple1;1";
+                var opt = "all";
+                JSROOT.OpenFile(filename, function(file) {
+                    file.ReadObject(itemname, function(obj) {
+                        JSROOT.draw("id_show_3D_All", obj, opt);
+                    });
                 });
-            });
+            };
             break;
         case 'CRP':
             figName = "LAPP.png";
@@ -588,9 +609,9 @@ function requestAjax(iGr, ipad) {
                         data[fields[i]] = val;
                     }
                 }
-                data['title'] = subTitles[ipad];
-                data['minGr'] = minmax['minGr'][ipad];
-                data['maxGr'] = minmax['maxGr'][ipad];
+                data['title'] = subTitles[iGr];
+                data['minGr'] = minmax['minGr'][iGr];
+                data['maxGr'] = minmax['maxGr'][iGr];
                 data['scale_status'] = false;
                 data['st_pvss_db'] = st_pvss_db;
                 var id_draw = 'object_draw_'+(ipad+1).toString();
@@ -702,8 +723,8 @@ function save() {
             opt_sens_save: JSON.stringify( $('input[name="opt-sens-save"]:checked').val() ),
             file_name: $('#txt_file_name').val(),
             names: JSON.stringify( $('#sensors-selected').val() ),
-            time1: $('#time1-file').val(),
-            time2: $('#time2-file').val(),
+            time1: $('#time1-file_inp').val(),
+            time2: $('#time2-file_inp').val(),
             pvss_db: JSON.stringify( $('input[name="pvss"]:checked').val()?"pvss":"db" ),
             selected_group: JSON.stringify( $('input[name="GrIndiv-1"]:checked').val() ),
             csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
