@@ -543,6 +543,7 @@ function requestAjax(iGr, ipad) {
     var category = $('input[name="seg-1"]:checked').val();
     var subTitles = subGrupTitles[category];
     var minmax = getMinMaxGr();
+    var indGr;
     if (selected_group=="Selected") {
         select_all();
         indGr = [0];
@@ -682,10 +683,10 @@ function getMinMaxGr() {
         var nSubGr = subGrupNames[category].length;
         for (var i=0; i<nSubGr; i++) {
             var id = 'check_' + category + '_' + i.toString();
-            if ($('#' + id).is(":checked")) {
+//             if ($('#' + id).is(":checked")) {
                 minGr.push( $( '#id_' + category + '_min_'+i.toString() ).val() );
                 maxGr.push( $( '#id_' + category + '_max_'+i.toString() ).val() );
-            }
+//             }
         }
     } else { 
         minGr.push(0);
