@@ -47,15 +47,15 @@ function AxisCustom(obj_parent) {
 //     
 }
 
-function CreateLegend(num_gr,ncol) {
+function CreateLegend(num_gr,ncol,xLinit) {
    var obj = JSROOT.Create("TPave");
    JSROOT.Create("TAttText", obj);
-   JSROOT.extend(obj, { fColumnSeparation: 0, fEntrySeparation: 0.1, fMargin: 0.25, fNColumns: ncol, fPrimitives: JSROOT.Create("TList") });
+   JSROOT.extend(obj, { fColumnSeparation: 0, fEntrySeparation: 0.05, fMargin: 0.2, fNColumns: ncol, fPrimitives: JSROOT.Create("TList") });
    obj._typename = 'TLegend';
-   var xL = 0.4-ncol*0.04;
+   var xL = xLinit-ncol*0.04;
    var xR = 0.9;
    var yU = 0.9;
-   var dy = 0.035;
+   var dy = 0.04;
    var yD = yU-dy*num_gr/ncol;
    JSROOT.extend(obj, { fX1NDC: xL, fY1NDC: yD, fX2NDC: xR, fY2NDC: yU });
 
@@ -80,6 +80,8 @@ function CreateLegendEntry(obj, lbl) {
 function updateGUI( id_obj, data ) {
     // this is just generation of graph
 //     window.alert("---- updateGUI ------");
+    var selected_group = $('input[name="GrIndiv-1"]:checked').val();
+    var category = $('input[name="seg-1"]:checked').val();
     var xx = data['xx'];
     var yy = data['yy'];
     var num_gr = data['num_gr'];
@@ -98,20 +100,35 @@ function updateGUI( id_obj, data ) {
 //     alert('st_pvss_db:'+st_pvss_db);
     
     var maxLegCol = 8;
+    var xLinit = 0.35;
+    if (num_gr>35) maxLegCol = 9;
+    if (num_gr>44) maxLegCol = 12;
     var ncol = Math.ceil(num_gr/maxLegCol);
-    var leg = CreateLegend(num_gr,ncol);
+    if (category=="Insulator" && selected_group=="Group") {
+        ncol = 3;
+        xLinit = 0.25;
+    }
+    var leg = CreateLegend(num_gr,ncol,xLinit);
     var coefDown=0.3, coefUp=0.8, minDelta=0.1;
 
     var graphs_js = [];
     var mgraph = JSROOT.Create("TMultiGraph");
     for (var igr=0; igr<num_gr; igr++) {
         var nameSens = names[igr];
-//         if (igr<2) {
-            var info = getInfoByName_PVSS_DB(nameSens,st_pvss_db);
-//             alert('--- updateGUI ---  namePVSS:'+info['namePVSS']+'  nameDB:'+info['nameDB']+'  ID:'+info['id']+'  unity:'+info['unity']);
-//         }
-        var unity = info['unity'];
-        if (unity!='None') {nameSens += ',' + unity;}
+        if (category=="Insulator") {
+            infoIns = getNameSensorInsulatorPos(nameSens,st_pvss_db);
+        } 
+        var info = getInfoByName_PVSS_DB(nameSens,st_pvss_db);
+//         alert('--- updateGUI ---  namePVSS:'+info['namePVSS']+'  nameDB:'+info['nameDB']+'  ID:'+info['id']+'  unity:'+info['unity']);
+        if (selected_group=="Group") {
+            nameSens = info['nameDB']+" / "+info['namePVSS'];
+        } else {
+            var unity = info['unity'];
+            if (unity!='None') {nameSens += ',' + unity;}
+        }
+        if (category=="Insulator") {
+            nameSens = infoIns["nameSensIns"];
+        } 
         
         if (igr>0 && scale_status) {
             var minYi = Math.min.apply(null,yy[igr]);
@@ -125,9 +142,18 @@ function updateGUI( id_obj, data ) {
             nameSens += " (" + limDown.toString() + "-" + limUp.toString() + ")";
         }
         graphs_js[igr] = JSROOT.CreateTGraph(xx[igr].length, xx[igr], yy[igr]);
+        var iLineWidth = 1;
+        var iLineStyle = 1;
         var iColor = igr+1;
         if (iColor==10) {iColor += 25;}
+        if (category=="Insulator") {
+            iColor = infoIns["iColor"];
+            iLineWidth = infoIns["iLineWidth"];
+            iLineStyle = infoIns["iLineStyle"];
+        } 
         graphs_js[igr].fLineColor = iColor;
+        graphs_js[igr].fLineWidth = iLineWidth;
+        graphs_js[igr].fLineStyle = iLineStyle;
         graphs_js[igr].fMarkerColor = iColor;
         graphs_js[igr].fMarkerStyle = 20;
         graphs_js[igr].fMarkerSize = 0.2;

@@ -16,6 +16,14 @@ function setSensors() {
     }
 }
 
+function checkSensOFF(nameSens) {
+//     alert("nameSens:"+nameSens+"   sens_OFF:"+sens_OFF);
+    for (var i=0; i<sens_OFF.length; i++) {
+        if (nameSens==sens_OFF[i]) return true;
+    }
+    return false;
+}
+
 function changePvssDb() {
     document.getElementById("txt_filter").value = '';
     setSensors();
@@ -89,6 +97,10 @@ function setupSubGroups(category) {
                 for (var i=0; i<nSubGr; i++) {
                     var iStr = i.toString();
                     var val = 0.;
+                    if (category=="Insulator") {
+                        if (mm=="min") {val=70;}
+                        else if (mm=="max") {val=350;}
+                    };
                     var divInit = '<div class="form-group" style="padding-top:-5px; padding-bottom:0px;margin-top:-1px;margin-bottom:0px;">';
                     var txtTooltip = ' data-toggle="tooltip" data-placement="bottom" title="' + mm + ' val" data-trigger="hover" ';
                     var label = '<label for="id_' + mm + '_'+ iStr + '"' +  txtTooltip + ' style="font-size:15px;height:18px;">' + mm + ':</label>';
@@ -338,6 +350,57 @@ function SwitchTab(my_tab, my_content) {
 $(function () {
     $("[data-toggle='tooltip']").tooltip();
 });
+
+function getNameSensorInsulatorPos(nameSens,st_pvss_db) {
+    var infoIns = {};
+    
+    var indGr = getIndGr();
+    var numPads = indGr.length;
+    var sizePad = getSizePad();
+    var widthPad=sizePad[0], heightPad=sizePad[1];
+    var numRows=sizePad[2];
+    var numbShown = Math.ceil(numPads/numRows);
+    
+    var info = getInfoByName_PVSS_DB(nameSens,st_pvss_db);
+    var dbnm = info['nameDB'];
+    var pvssnm = info['namePVSS'];
+    var namePos = "";
+    var iBlack=1, iRed=2, iGreen=3, iBlue=4, iYellow=5, iMagnetta=6, iCyan=7;
+    var iColor = iBlack; // black
+    var iLineWidth = 2; 
+    var iLineStyle = 1; 
+    if (dbnm.indexOf("_L_")>-1) {namePos = "Lower"; iColor = iRed;}
+    if (dbnm.indexOf("_M_")>-1) {namePos = "Middle"; iColor = iGreen;}
+    if (dbnm.indexOf("_U_")>-1) {namePos = "Upper"; iColor = iBlue;}
+    if (dbnm.indexOf("_O_")>-1) {namePos = "Outer"; iColor = iRed;}
+    if (dbnm.indexOf("_I_")>-1) {namePos = "Inner"; iColor = iBlue;}
+    var dbnm_s2 = dbnm.substr(dbnm.length-2); // last 2 symbols
+    var nameDirect = "";
+    if (dbnm.indexOf("_B_")>-1) { // Bottom
+        if (dbnm_s2.indexOf("_S")>-1) {nameDirect = " South";}
+        if (dbnm_s2.indexOf("_M")>-1) {nameDirect = " Center"; iLineStyle = 2;}
+        if (dbnm_s2.indexOf("_N")>-1) {nameDirect = " North"; iLineStyle = 3;}
+    } else { 
+        if (dbnm_s2.indexOf("_U")>-1) {nameDirect = " Upper";}
+        if (dbnm_s2.indexOf("_M")>-1) {nameDirect = " Center"; iLineStyle = 2;}
+        if (dbnm_s2.indexOf("_L")>-1) {nameDirect = " Lower"; iLineStyle = 3;}
+    }
+    var nameSensIns = namePos + nameDirect + " (" + pvssnm + ")";
+    if (checkSensOFF(nameSens)) 
+        nameSensIns = namePos + nameDirect + " (OFF)";
+//     alert("widthPad:"+widthPad);
+    if (widthPad<300) nameSensIns = namePos + nameDirect;
+    if (pvssnm=="TE0073") {
+        nameSensIns = "Tmin (" + pvssnm + ")";
+        iLineWidth = 3; // bold
+    }
+//     alert('---getNameSensorInsulator--- nameSensIns:'+nameSensIns+'  ID:'+info['id']+'  nameDB:'+info['nameDB']+'  namePVSS:'+info['namePVSS']);
+    infoIns["nameSensIns"] = nameSensIns;
+    infoIns["iColor"] = iColor;
+    infoIns["iLineWidth"] = iLineWidth;
+    infoIns["iLineStyle"] = iLineStyle;
+    return infoIns;
+};
 
 function getInfoByName_PVSS_DB(nameSens,st_pvss_db) {
     var category = 'All';
