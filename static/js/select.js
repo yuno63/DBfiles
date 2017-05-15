@@ -648,6 +648,8 @@ function requestAjax(iGr, ipad) {
         },
         // if success post request
         success : function(json) {
+            if (mode=="monitor")
+                $("#id_time_monitor").text(json['time_access_str']);  
             idp=document.getElementById('pos_group');
             var txt='<div id="id_test" style="display:none;">BASE_DIR:' + json['BASE_DIR'] +';</div>';
 //             idp.innerHTML=txt;
