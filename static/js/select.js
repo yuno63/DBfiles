@@ -351,6 +351,16 @@ $(function () {
     $("[data-toggle='tooltip']").tooltip();
 });
 
+function getPadWidth() {
+    var sizePad = getSizePad();
+    return sizePad[0];
+};
+
+function getPadHeight() {
+    var sizePad = getSizePad();
+    return sizePad[1];
+};
+
 function getNameSensorInsulatorPos(nameSens,st_pvss_db) {
     var infoIns = {};
     

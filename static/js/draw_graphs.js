@@ -55,7 +55,8 @@ function CreateLegend(num_gr,ncol,xLinit) {
    var xL = xLinit-ncol*0.04;
    var xR = 0.9;
    var yU = 0.9;
-   var dy = 0.04;
+   var dy = 0.035;
+   if (ncol>3) dy = 0.03;
    var yD = yU-dy*num_gr/ncol;
    JSROOT.extend(obj, { fX1NDC: xL, fY1NDC: yD, fX2NDC: xR, fY2NDC: yU });
 
@@ -99,10 +100,10 @@ function updateGUI( id_obj, data ) {
     var st_pvss_db = data['st_pvss_db'];
 //     alert('st_pvss_db:'+st_pvss_db);
     
-    var maxLegCol = 8;
+    var maxLegCol = 7;
     var xLinit = 0.35;
-    if (num_gr>35) maxLegCol = 9;
-    if (num_gr>44) maxLegCol = 12;
+    if (num_gr>31) maxLegCol = 8;
+    if (num_gr>44) maxLegCol = 10;
     var ncol = Math.ceil(num_gr/maxLegCol);
     if (category=="Insulator" && selected_group=="Group") {
         ncol = 3;
@@ -121,7 +122,10 @@ function updateGUI( id_obj, data ) {
         var info = getInfoByName_PVSS_DB(nameSens,st_pvss_db);
 //         alert('--- updateGUI ---  namePVSS:'+info['namePVSS']+'  nameDB:'+info['nameDB']+'  ID:'+info['id']+'  unity:'+info['unity']);
         if (selected_group=="Group") {
-            nameSens = info['nameDB']+" / "+info['namePVSS'];
+            nameSens = info['nameDB'] + " / "+info['namePVSS'];
+//             alert('getPadWidth():'+getPadWidth()+'  nameSens:'+nameSens);
+            if ( (getPadWidth()<500) && (ncol>3) ) nameSens = info['nameDB'];
+//             if (igr<2) alert('getPadWidth():'+getPadWidth()+'  nameSens:'+nameSens);
         } else {
             var unity = info['unity'];
             if (unity!='None') {nameSens += ',' + unity;}
